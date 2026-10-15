@@ -1,0 +1,173 @@
+rules_version = '2';
+
+// мамаИзбира — Firestore Security Rules (D-009)
+// Роли: user | moderator | admin — живеят в users/{uid}.role
+// Ревюта: products/{productId}/reviews/{userId} (id = userId → 1 ревю на потребител)
+// Гласове: products/{productId}/reviews/{reviewId}/votes/{userId} (1 глас на потребител)
+//
+// ЗАБЕЛЕЖКА (компромис без Cloud Functions):
+//  Клиентските транзакции обновяват агрегати (ratingSum/reviewsCount на продукт,
+//  upvotes/downvotes/netScore на ревю) с atomic increment. Правилата не могат да
+//  разграничат "транзакция към ревю" от произволен запис, затова полетата на
+//  агрегатите са отворени за всеки логнат потребител. Малък риск от вандализъм,
+//  приет за MVP (виж docs/04-decisions/decision-log.md D-003/D-009).
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Функциите са ВЪТРЕ в match скоупа, за да е валидна променливата $(database).
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isRole(role) {
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
+    }
+
+    // Акаунти, които имат право сами да се промотират до admin (D-012)
+    function isBootstrapAdminEmail() {
+      return isSignedIn() && request.auth.token.email == 'admin@mamaizbira.com';
+    }
+
+    function isModerator() {
+      return isRole('moderator') || isRole('admin');
+    }
+
+    function isAdmin() {
+      return isRole('admin');
+    }
+
+    // ---- reviews (collection group) ----
+    // Firestore изисква изрично правило с recursive wildcard, за да разреши
+    // `collectionGroup('reviews')` заявки (D-014). Важи за всяка колекция с id
+    // 'reviews' на произволно ниво. Записът се урежда от nested match-а по-долу.
+    match /{path=**}/reviews/{reviewId} {
+      allow get, list: if isModerator()
+                        || (resource != null && resource.data.status == 'visible')
+                        || (resource != null && resource.data.userId == request.auth.uid);
+    }
+
+    // ---- users ----
+    match /users/{uid} {
+      allow read: if true; // публично четимо (показване на имена на автори)
+      // Bootstrap (D-012): първият потребител в празна база става admin
+      // ИЛИ акаунт от списъка isBootstrapAdminEmail може да се промотира сам.
+      allow create: if isSignedIn() && request.auth.uid == uid
+                    && request.resource.data.createdAt is timestamp
+                    && (request.resource.data.role == 'user'
+                        || (request.resource.data.role == 'admin'
+                            && (!exists(/databases/$(database)/documents/users) || isBootstrapAdminEmail())));
+      allow update: if isSignedIn() && request.auth.uid == uid
+                    && (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'email', 'updatedAt'])
+                        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role'])
+                            && request.resource.data.role == 'admin'
+                            && isBootstrapAdminEmail()));
+      allow delete: if false;
+    }
+
+    // ---- categories ----
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ---- products ----
+    match /products/{productId} {
+      // гости: само одобрени; автор: и собствените; модератори: всичко
+      allow get: if isModerator() || resource.data.status == 'approved'
+                 || resource.data.createdBy == request.auth.uid;
+      allow list: if isModerator() || resource.data.status == 'approved'
+                  || resource.data.createdBy == request.auth.uid;
+
+      // създаване: логнат, задължително 'pending', нулеви агрегати
+      allow create: if isSignedIn()
+        && request.resource.data.keys().hasOnly([
+             'brand', 'model', 'categoryId', 'imageUrl', 'status',
+             'createdBy', 'createdAt', 'ratingSum', 'reviewsCount'
+           ])
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.ratingSum == 0
+        && request.resource.data.reviewsCount == 0
+        && request.resource.data.brand is string
+        && request.resource.data.model is string
+        && request.resource.data.categoryId is string;
+
+      // модератор: статус/причина; всеки логнат: агрегати от ревю транзакциите
+      allow update: if (isModerator()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'rejectionReason'])
+        && (request.resource.data.status == 'approved'
+            || (request.resource.data.status == 'rejected' && request.resource.data.rejectionReason is string)))
+        || (isSignedIn()
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ratingSum', 'reviewsCount'])
+            && request.resource.data.ratingSum is number
+            && request.resource.data.reviewsCount is int
+            && request.resource.data.reviewsCount >= 0);
+      allow delete: if isAdmin();
+
+      // ---- reviews (subcollection, id = userId) ----
+      match /reviews/{reviewUserId} {
+        // видими за всички; авторът вижда и своите скрити; модераторите - всичко.
+        // reviewUserId == request.auth.uid е първо, за да позволи четене и на още
+        // несъздадено собствено ревю (иначе транзакцията за създаване се отказва).
+        allow read: if reviewUserId == request.auth.uid
+                    || isModerator()
+                    || (resource != null && resource.data.status == 'visible');
+
+        allow create: if isSignedIn()
+          && request.auth.uid == reviewUserId
+          && request.auth.uid == request.resource.data.userId
+          && request.resource.data.productId == productId
+          && request.resource.data.status == 'visible'
+          && request.resource.data.rating >= 1 && request.resource.data.rating <= 5
+          && request.resource.data.rating is int
+          && request.resource.data.upvotes == 0
+          && request.resource.data.downvotes == 0
+          && request.resource.data.netScore == 0
+          && !exists(/databases/$(database)/documents/products/$(productId)/reviews/$(request.auth.uid));
+
+        // автор: текст/оценка; всеки логнат: глас агрегати от vote транзакциите
+        allow update: if (isSignedIn()
+          && request.auth.uid == reviewUserId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rating', 'text', 'updatedAt'])
+          && request.resource.data.rating >= 1 && request.resource.data.rating <= 5)
+          || (isSignedIn()
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['upvotes', 'downvotes', 'netScore'])
+              && request.resource.data.upvotes is int
+              && request.resource.data.downvotes is int
+              && request.resource.data.netScore is int);
+
+        allow delete: if isSignedIn() && request.auth.uid == reviewUserId;
+
+        // ---- votes (subcollection, id = voter) ----
+        match /votes/{voterId} {
+          allow read: if true;
+          allow create, update: if isSignedIn()
+            && request.auth.uid == voterId
+            && request.resource.data.keys().hasOnly(['type', 'createdAt'])
+            && request.resource.data.type in ['up', 'down']
+            && request.resource.data.createdAt is timestamp;
+          allow delete: if isSignedIn() && request.auth.uid == voterId;
+        }
+      }
+    }
+
+    // ---- reports ----
+    match /reports/{reportId} {
+      allow read: if isModerator();
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.reason is string
+        && request.resource.data.reason.size() >= 5
+        && request.resource.data.status == 'new'
+        && request.resource.data.createdAt is timestamp;
+      allow update: if isModerator()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'handledBy', 'handledAt'])
+        && request.resource.data.status == 'handled'
+        && request.resource.data.handledBy == request.auth.uid
+        && request.resource.data.handledAt is timestamp;
+      allow delete: if isAdmin();
+    }
+  }
+}

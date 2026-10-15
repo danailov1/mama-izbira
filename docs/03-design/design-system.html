@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>мамаИзбира — Design System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700;800&family=Golos+Text:wght@400;500;600;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,-25..0" rel="stylesheet">
+<style>
+
+  /* =====================================================
+     ТОКЪНИ — мамаИзбира Design System
+     Палитра, вдъхновена от бебешки пюрета: цвекло / моркови / грах.
+     Display: Unbounded (rounded geometric) · Body: Golos Text
+     Accent: Caveat (ръкописен, глас на реалните мами)
+     Икони: изцяло Material Symbols Rounded — без емоджита.
+     ===================================================== */
+
+  :root{
+    --oat:        #F1F3EC;
+    --oat-raised: #FFFFFF;
+    --ink:        #2A1F27;
+    --grey:       #7A716B;
+    --grey-light: #A69F98;
+    --line:       #E2DFD3;
+
+    --berry:      #7C2D48;
+    --berry-dark: #5E2038;
+    --carrot:     #E2822E;
+    --carrot-dark:#C56A1E;
+    --sage:       #5E8064;
+    --sage-dark:  #47654C;
+    --rose:       #B23B4E;
+    --plum-tint:  #EADCE2;
+    --carrot-tint:#FBE6CE;
+    --sage-tint:  #DEE9DF;
+    --rose-tint:  #F6DCDF;
+
+    --font-display: 'Unbounded', system-ui, sans-serif;
+    --font-body: 'Golos Text', system-ui, sans-serif;
+    --font-hand: 'Caveat', cursive;
+
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 22px;
+    --shadow-card: 0 2px 14px rgba(42,31,39,0.08);
+    --shadow-raised: 0 10px 34px rgba(42,31,39,0.16);
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+  body{
+    margin:0;
+    background: var(--oat);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: 76px; /* space for mobile bottom nav */
+  }
+  img{ max-width:100%; display:block; }
+  a{ color: inherit; }
+
+  /* icon helper */
+  .msr{
+    font-family: 'Material Symbols Rounded';
+    font-weight: normal; font-style: normal;
+    font-size: 22px; line-height: 1; display:inline-block;
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    vertical-align: middle;
+  }
+  .msr.fill{ font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .msr.sm{ font-size: 18px; }
+  .msr.lg{ font-size: 28px; }
+  .msr.xl{ font-size: 40px; }
+
+  section{ padding: 56px 20px; max-width: 1080px; margin: 0 auto; }
+  section + section{ border-top: 1px solid var(--line); }
+
+  h1,h2,h3{ font-family: var(--font-display); margin: 0 0 8px; letter-spacing: -0.01em; }
+  .eyebrow{
+    font-family: var(--font-body); font-weight: 700; font-size: 12px;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--berry);
+    margin-bottom: 10px; display:flex; align-items:center; gap:6px;
+  }
+  .section-desc{ color: var(--grey); max-width: 62ch; margin: 0 0 32px; font-size: 15px; }
+
+  /* NAV */
+  .nav{
+    position: sticky; top:0; z-index: 30;
+    background: rgba(241,243,236,0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 20px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .logo{ font-family: var(--font-display); font-weight: 700; font-size: 18px; color: var(--berry); }
+  .logo span{ color: var(--carrot); }
+  .nav-links{ display:none; gap: 24px; font-size: 14px; font-weight:600; }
+  .nav-actions{ display:flex; align-items:center; gap:10px; }
+  .icon-btn{
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--oat-raised); border:1px solid var(--line); color: var(--ink);
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .nav-avatar{
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--berry); color: white;
+    display:flex; align-items:center; justify-content:center;
+    font-family: var(--font-display); font-size: 13px; font-weight:700;
+  }
+  @media(min-width: 760px){ .nav-links{ display:flex; } }
+
+  /* HERO */
+  .hero{ padding: 64px 20px 40px; max-width: 1040px; margin: 0 auto; text-align:center; }
+  .hero-stars{ display:flex; justify-content:center; gap:2px; color: var(--carrot); margin-bottom: 10px; }
+  .hero-quote{
+    font-family: var(--font-hand); font-weight: 600;
+    font-size: clamp(34px, 6vw, 56px); line-height: 1.15;
+    color: var(--berry-dark); max-width: 16ch; margin: 0 auto 20px;
+  }
+  .hero-byline{ color: var(--grey); font-size: 14px; font-weight: 600; }
+  .hero-byline b{ color: var(--ink); }
+  .hero-tag{
+    display:inline-flex; align-items:center; gap:8px; margin-top: 28px;
+    font-family: var(--font-display); font-weight: 600; font-size: 13px;
+    color: var(--ink); background: var(--oat-raised);
+    border: 1px solid var(--line); border-radius: 999px;
+    padding: 10px 18px; box-shadow: var(--shadow-card);
+  }
+
+  /* SWATCHES */
+  .swatches{ display:grid; grid-template-columns: repeat(2,1fr); gap:14px; }
+  @media(min-width:640px){ .swatches{ grid-template-columns: repeat(4,1fr); } }
+  .swatch{ border-radius: var(--radius-md); overflow:hidden; border:1px solid var(--line); background:var(--oat-raised); }
+  .swatch-color{ height: 84px; }
+  .swatch-label{ padding: 10px 12px; font-size: 12px; }
+  .swatch-label b{ display:block; font-size:13px; margin-bottom:2px; }
+
+  /* TYPE */
+  .type-row{ display:flex; align-items:baseline; gap: 20px; padding: 16px 0; border-bottom: 1px dashed var(--line); flex-wrap:wrap; }
+  .type-row:last-child{ border-bottom:none; }
+  .type-meta{ font-size: 12px; color: var(--grey); min-width: 170px; }
+  .type-sample-display{ font-family: var(--font-display); font-weight:700; }
+  .type-sample-body{ font-family: var(--font-body); }
+  .type-sample-hand{ font-family: var(--font-hand); font-weight:600; color: var(--berry); }
+
+  /* ICON SET */
+  .icon-grid{ display:grid; grid-template-columns: repeat(3,1fr); gap:12px; }
+  @media(min-width:640px){ .icon-grid{ grid-template-columns: repeat(6,1fr); } }
+  .icon-tile{
+    background: var(--oat-raised); border:1px solid var(--line); border-radius: var(--radius-md);
+    padding: 18px 10px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px;
+  }
+  .icon-tile .msr{ color: var(--berry); }
+  .icon-tile span.label{ font-size: 11px; color: var(--grey); }
+
+  /* BUTTONS */
+  .row{ display:flex; flex-wrap:wrap; gap: 12px; align-items:center; }
+  .btn{
+    font-family: var(--font-body); font-weight:700; font-size: 14px;
+    border-radius: 999px; padding: 13px 24px; border: none; cursor:pointer;
+    display:inline-flex; align-items:center; gap:8px;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .btn:hover{ transform: translateY(-1px); }
+  .btn-primary{ background: var(--berry); color: white; box-shadow: var(--shadow-card); }
+  .btn-secondary{ background: var(--carrot); color: white; box-shadow: var(--shadow-card); }
+  .btn-ghost{ background: transparent; color: var(--ink); border: 1.5px solid var(--line); }
+  .btn-ghost:hover{ border-color: var(--berry); color: var(--berry); }
+  .btn-danger{ background: var(--rose-tint); color: var(--rose); }
+  .btn-sm{ padding: 8px 16px; font-size: 13px; }
+  .btn-icon-only{ width:42px; height:42px; padding:0; justify-content:center; border-radius:50%; }
+
+  /* STAMP + BADGES */
+  .stamp{
+    display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+    width: 116px; height: 116px; border-radius: 50%;
+    border: 2.5px dashed var(--berry); color: var(--berry);
+    font-family: var(--font-display); font-weight: 700; font-size: 11px;
+    text-transform:uppercase; letter-spacing: 0.05em; text-align:center; line-height:1.3;
+    transform: rotate(-8deg); position:relative;
+  }
+  .stamp::before{ content:""; position:absolute; inset: 8px; border: 1px solid var(--berry); border-radius: 50%; opacity:.5; }
+  .stamp .msr{ margin-bottom:2px; }
+  .badge{ display:inline-flex; align-items:center; gap:6px; font-size: 12px; font-weight:700; padding: 7px 13px; border-radius: 999px; }
+  .badge-approved{ background: var(--sage-tint); color: var(--sage-dark); }
+  .badge-pending{ background: var(--carrot-tint); color: var(--carrot-dark); }
+  .badge-rejected{ background: var(--rose-tint); color: var(--rose); }
+  .badge .msr{ font-size:15px; }
+
+  /* CHIPS / TABS / BREADCRUMBS */
+  .chip-row{ display:flex; gap:10px; overflow-x:auto; padding-bottom: 6px; -webkit-overflow-scrolling:touch; }
+  .chip{ flex: 0 0 auto; background: var(--oat-raised); border:1px solid var(--line); padding: 10px 16px; border-radius: 999px; font-size: 13px; font-weight:600; white-space:nowrap; display:flex; align-items:center; gap:6px; }
+  .chip.active{ background: var(--berry); color:white; border-color:var(--berry); }
+  .chip .msr{ font-size:16px; }
+
+  .tabs{ display:flex; gap: 4px; background: var(--oat-raised); border:1px solid var(--line); border-radius: 999px; padding: 4px; width: fit-content; }
+  .tab{ padding: 9px 18px; border-radius: 999px; font-size: 13px; font-weight:700; color: var(--grey); cursor:pointer; }
+  .tab.active{ background: var(--berry); color:white; }
+
+  .breadcrumbs{ display:flex; align-items:center; gap:4px; font-size: 13px; color: var(--grey); font-weight:600; flex-wrap:wrap; }
+  .breadcrumbs a{ color: var(--grey); }
+  .breadcrumbs .current{ color: var(--ink); }
+  .breadcrumbs .msr{ font-size: 16px; color: var(--grey-light); }
+
+  /* RATING / VOTE */
+  .stars-row{ display:flex; gap:2px; color: var(--carrot); }
+  .stars-row .msr{ font-size: 20px; }
+  .stars-row .dim{ color: var(--line); }
+  .rating-line{ display:flex; align-items:center; gap:10px; }
+  .rating-num{ font-family: var(--font-display); font-weight:700; font-size: 15px; }
+
+  .vote{ display:flex; flex-direction:column; align-items:center; gap:0; background: var(--oat); border-radius: var(--radius-sm); padding: 4px 10px; border: 1px solid var(--line); }
+  .vote button{ border:none; background:none; cursor:pointer; color: var(--grey); line-height:1; padding: 4px; display:flex; }
+  .vote button.up:hover{ color: var(--sage-dark); }
+  .vote button.down:hover{ color: var(--berry); }
+  .vote-count{ font-family: var(--font-display); font-weight:700; font-size:14px; }
+
+  /* SEARCH + FILTER BAR */
+  .searchbar{ display:flex; gap:10px; align-items:center; background: var(--oat-raised); border:1.5px solid var(--line); border-radius: 999px; padding: 10px 16px; max-width: 480px; }
+  .searchbar input{ border:none; outline:none; background:transparent; font-family:var(--font-body); font-size:14px; width:100%; color:var(--ink); }
+  .searchbar .msr{ color: var(--grey); }
+  .filter-row{ display:flex; gap:12px; margin-top:16px; flex-wrap:wrap; }
+
+  /* CARDS */
+  .grid-cards{ display:grid; grid-template-columns: 1fr; gap: 18px; }
+  @media(min-width:680px){ .grid-cards{ grid-template-columns: 1fr 1fr; } }
+  .grid-cards.three{ grid-template-columns:1fr; }
+  @media(min-width:860px){ .grid-cards.three{ grid-template-columns: 1fr 1fr 1fr; } }
+
+  .product-card{ background: var(--oat-raised); border-radius: var(--radius-lg); border: 1px solid var(--line); box-shadow: var(--shadow-card); padding: 20px; display:flex; flex-direction:column; gap: 12px; }
+  .product-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+  .product-thumb{ width:52px; height:52px; border-radius: var(--radius-sm); background: var(--carrot-tint); color: var(--carrot-dark); display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+  .product-name{ font-family: var(--font-display); font-weight:600; font-size: 15px; margin:0; }
+  .product-brand{ color: var(--grey); font-size: 13px; margin: 2px 0 0; }
+  .product-cat{ font-size: 11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color: var(--berry); display:flex; align-items:center; gap:4px; }
+  .product-cat .msr{ font-size:14px; }
+
+  .review-card{ background: var(--oat-raised); border-radius: var(--radius-lg); border: 1px solid var(--line); padding: 20px; display:flex; gap: 16px; align-items:flex-start; }
+  .avatar{ width:40px; height:40px; border-radius:50%; flex:0 0 auto; background: var(--plum-tint); color: var(--berry); display:flex; align-items:center; justify-content:center; font-family: var(--font-display); font-weight:700; font-size:14px; }
+  .review-name{ font-weight:700; font-size: 14px; }
+  .review-meta{ color: var(--grey); font-size: 12px; }
+  .review-text{ margin: 10px 0 12px; font-size: 14px; }
+  .review-foot{ display:flex; justify-content:space-between; align-items:center; }
+
+  /* AVATAR GROUP */
+  .avatar-group{ display:flex; align-items:center; }
+  .avatar-group .avatar{ margin-left:-10px; border: 2px solid var(--oat-raised); }
+  .avatar-group .avatar:first-child{ margin-left:0; }
+  .avatar-group .avatar.more{ background: var(--ink); color:white; font-size:11px; }
+
+  /* ALERTS / TOASTS */
+  .alert{ display:flex; gap:12px; align-items:flex-start; border-radius: var(--radius-md); padding: 14px 16px; font-size: 13px; border:1px solid transparent; }
+  .alert .msr{ margin-top:1px; }
+  .alert-success{ background: var(--sage-tint); color: var(--sage-dark); }
+  .alert-warning{ background: var(--carrot-tint); color: var(--carrot-dark); }
+  .alert-error{ background: var(--rose-tint); color: var(--rose); }
+  .alert-info{ background: var(--plum-tint); color: var(--berry-dark); }
+  .alert b{ display:block; margin-bottom:2px; }
+
+  .toast{ display:flex; align-items:center; gap:12px; background: var(--ink); color:white; border-radius: 999px; padding: 12px 20px; font-size:13px; font-weight:600; box-shadow: var(--shadow-raised); width: fit-content; }
+  .toast .msr{ color: var(--sage); }
+
+  /* EMPTY STATE */
+  .empty-state{ text-align:center; padding: 50px 20px; background: var(--oat-raised); border:1.5px dashed var(--line); border-radius: var(--radius-lg); }
+  .empty-state .msr{ font-size: 44px; color: var(--grey-light); margin-bottom: 12px; }
+  .empty-state h3{ font-size: 16px; margin-bottom:6px; }
+  .empty-state p{ color: var(--grey); font-size: 14px; max-width: 40ch; margin: 0 auto 18px; }
+
+  /* MODAL */
+  .modal-backdrop{ background: rgba(42,31,39,0.5); border-radius: var(--radius-lg); padding: 40px 20px; display:flex; justify-content:center; }
+  .modal{ background: var(--oat-raised); border-radius: var(--radius-lg); box-shadow: var(--shadow-raised); padding: 26px; max-width: 420px; width:100%; }
+  .modal-head{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
+  .modal-head .msr{ cursor:pointer; color:var(--grey); }
+  .modal p{ color: var(--grey); font-size: 14px; margin: 0 0 20px; }
+
+  /* TOOLTIP */
+  .tooltip-demo{ position:relative; display:inline-flex; }
+  .tooltip-bubble{ position:absolute; bottom: calc(100% + 8px); left:50%; transform: translateX(-50%); background: var(--ink); color:white; font-size:11px; padding:6px 10px; border-radius:6px; white-space:nowrap; }
+  .tooltip-bubble::after{ content:""; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color: var(--ink); }
+
+  /* TABLE (admin queue) */
+  .table-wrap{ background: var(--oat-raised); border:1px solid var(--line); border-radius: var(--radius-lg); overflow:hidden; box-shadow: var(--shadow-card); }
+  table{ width:100%; border-collapse: collapse; font-size: 13px; }
+  thead th{ text-align:left; font-size: 11px; text-transform:uppercase; letter-spacing:.05em; color: var(--grey); padding: 14px 16px; border-bottom:1px solid var(--line); }
+  tbody td{ padding: 14px 16px; border-bottom:1px solid var(--line); vertical-align:middle; }
+  tbody tr:last-child td{ border-bottom:none; }
+  .row-actions{ display:flex; gap:8px; }
+  .table-product{ display:flex; align-items:center; gap:10px; }
+  .table-thumb{ width:34px; height:34px; border-radius:8px; background:var(--carrot-tint); color:var(--carrot-dark); display:flex; align-items:center; justify-content:center; }
+  .table-thumb .msr{ font-size:17px; }
+
+  /* SKELETON */
+  .skeleton{ background: linear-gradient(90deg, var(--line) 25%, #ECE9DE 37%, var(--line) 63%); background-size: 400% 100%; animation: shimmer 1.6s ease-in-out infinite; border-radius: var(--radius-sm); }
+  @keyframes shimmer{ 0%{background-position: 100% 50%;} 100%{background-position: 0 50%;} }
+
+  /* PAGINATION */
+  .pagination{ display:flex; align-items:center; gap:6px; }
+  .page-btn{ width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color: var(--grey); cursor:pointer; }
+  .page-btn.active{ background: var(--berry); color:white; }
+  .page-btn .msr{ font-size:18px; }
+
+  /* FORMS */
+  .field{ margin-bottom: 18px; }
+  .field label{ display:block; font-size: 13px; font-weight:700; margin-bottom: 7px; }
+  .field-input-wrap{ position:relative; }
+  .field-input-wrap .msr{ position:absolute; left:14px; top:50%; transform:translateY(-50%); color: var(--grey); font-size:19px; }
+  .field-input-wrap input{ padding-left: 42px; }
+  .field input, .field select, .field textarea{ width:100%; font-family: var(--font-body); font-size: 14px; padding: 12px 14px; border-radius: var(--radius-sm); border: 1.5px solid var(--line); background: var(--oat-raised); color: var(--ink); }
+  .field input:focus, .field select:focus, .field textarea:focus{ outline: none; border-color: var(--berry); box-shadow: 0 0 0 3px var(--plum-tint); }
+  .field-hint{ font-size:12px; color:var(--grey); margin-top: 6px; display:flex; align-items:center; gap:5px; }
+  .field-hint .msr{ font-size:14px; }
+  .star-input{ display:flex; gap:4px; color: var(--carrot); }
+  .star-input .msr{ font-size:28px; cursor:pointer; }
+  .form-card{ background: var(--oat-raised); border-radius: var(--radius-lg); border:1px solid var(--line); box-shadow: var(--shadow-card); padding: 26px; max-width: 480px; }
+
+  /* STATS STRIP */
+  .stats-strip{ display:grid; grid-template-columns: repeat(2,1fr); gap:14px; }
+  @media(min-width:640px){ .stats-strip{ grid-template-columns: repeat(4,1fr); } }
+  .stat-card{ background: var(--oat-raised); border:1px solid var(--line); border-radius: var(--radius-md); padding: 18px; }
+  .stat-card .msr{ color: var(--berry); margin-bottom:8px; }
+  .stat-num{ font-family: var(--font-display); font-weight:700; font-size: 24px; }
+  .stat-label{ font-size:12px; color: var(--grey); }
+
+  /* BOTTOM NAV (mobile) */
+  .bottom-nav{ position: fixed; bottom:0; left:0; right:0; background: var(--oat-raised); border-top:1px solid var(--line); display:flex; justify-content:space-around; padding: 8px 6px 10px; z-index: 40; }
+  .bottom-nav a{ display:flex; flex-direction:column; align-items:center; gap:2px; font-size: 10px; font-weight:700; color: var(--grey-light); }
+  .bottom-nav a.active{ color: var(--berry); }
+  .bottom-nav .fab{ width:48px; height:48px; border-radius:50%; background:var(--berry); color:white; display:flex; align-items:center; justify-content:center; margin-top:-22px; box-shadow: var(--shadow-raised); }
+
+  footer{ text-align:center; padding: 40px 20px 40px; color: var(--grey); font-size: 13px; }
+</style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="logo">мама<span>Избира</span></div>
+    <div class="nav-links">
+      <a href="#tokens">Токъни</a>
+      <a href="#components">Компоненти</a>
+      <a href="#cards">Карти</a>
+      <a href="#patterns">Модели</a>
+      <a href="#forms">Форми</a>
+    </div>
+    <div class="nav-actions">
+      <div class="icon-btn"><span class="msr sm">search</span></div>
+      <div class="icon-btn"><span class="msr sm">notifications</span></div>
+      <div class="nav-avatar">М</div>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-stars">
+      <span class="msr fill">star</span><span class="msr fill">star</span><span class="msr fill">star</span><span class="msr fill">star</span><span class="msr fill">star</span>
+    </div>
+    <p class="hero-quote">„Най-накрая количка, която наистина издържа до детска градина.“</p>
+    <p class="hero-byline"><b>Ивелина Т.</b> · майка на 2 · Столче за хранене Peg Pérego</p>
+    <span class="hero-tag"><span class="msr sm">verified</span> мамаИзбира — Design System v2.0</span>
+  </div>
+
+  <section id="tokens">
+    <span class="eyebrow"><span class="msr sm">palette</span>Токъни · 01</span>
+    <h2>Цветова палитра</h2>
+    <p class="section-desc">Вдъхновена от бебешки пюрета — цвекло, моркови, грах — на топъл зеленикав фон. Тонове, които усещаме едновременно естествени и доверчиви.</p>
+    <div class="swatches">
+      <div class="swatch"><div class="swatch-color" style="background:var(--berry)"></div><div class="swatch-label"><b>Berry</b>#7C2D48 · brand</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:var(--carrot)"></div><div class="swatch-label"><b>Carrot</b>#E2822E · оценки/CTA</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:var(--sage)"></div><div class="swatch-label"><b>Sage</b>#5E8064 · одобрено</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:var(--rose)"></div><div class="swatch-label"><b>Rose</b>#B23B4E · грешки</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:var(--oat)"></div><div class="swatch-label"><b>Oat</b>#F1F3EC · фон</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:var(--ink)"></div><div class="swatch-label" style="color:white; background:var(--ink)"><b>Ink</b>#2A1F27 · текст</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:var(--grey)"></div><div class="swatch-label"><b>Grey</b>#7A716B · вторичен текст</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:var(--plum-tint)"></div><div class="swatch-label"><b>Plum tint</b>#EADCE2 · тагове</div></div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow"><span class="msr sm">text_fields</span>Токъни · 02</span>
+    <h2>Типография</h2>
+    <p class="section-desc">Unbounded (display, rounded geometric) носи характера на бранда. Golos Text (body) е чист и четим на кирилица. Caveat (hand) е гласът на реалните мами.</p>
+    <div class="type-row"><div class="type-meta">Display / H1 · Unbounded 700</div><div class="type-sample-display" style="font-size:32px">Изберете правилно, от първия път</div></div>
+    <div class="type-row"><div class="type-meta">Display / H2 · Unbounded 600</div><div class="type-sample-display" style="font-size:22px">Столчета за хранене</div></div>
+    <div class="type-row"><div class="type-meta">Body / текст · Golos Text 400</div><div class="type-sample-body" style="font-size:15px; max-width:44ch">Използваме количката вече 8 месеца — сгъва се лесно с една ръка и минава през всяка врата без проблем.</div></div>
+    <div class="type-row"><div class="type-meta">Body / caption · Golos Text 600</div><div class="type-sample-body" style="font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--grey)">24 полезни гласа · преди 3 дни</div></div>
+    <div class="type-row"><div class="type-meta">Hand / accent · Caveat 600</div><div class="type-sample-hand" style="font-size:26px">препоръчвам с две ръце!</div></div>
+  </section>
+
+  <section>
+    <span class="eyebrow"><span class="msr sm">widgets</span>Токъни · 03</span>
+    <h2>Иконография</h2>
+    <p class="section-desc">Само Material Symbols Rounded — никакви емоджита. Заоблен стил, съгласуван с шрифта Unbounded.</p>
+    <div class="icon-grid">
+      <div class="icon-tile"><span class="msr lg">stroller</span><span class="label">Колички</span></div>
+      <div class="icon-tile"><span class="msr lg">high_chair</span><span class="label">Столчета</span></div>
+      <div class="icon-tile"><span class="msr lg">directions_car</span><span class="label">Кошчета</span></div>
+      <div class="icon-tile"><span class="msr lg">local_drink</span><span class="label">Шишета</span></div>
+      <div class="icon-tile"><span class="msr lg">child_care</span><span class="label">Формула</span></div>
+      <div class="icon-tile"><span class="msr lg">toys</span><span class="label">Играчки</span></div>
+      <div class="icon-tile"><span class="msr lg">skillet</span><span class="label">Храна</span></div>
+      <div class="icon-tile"><span class="msr lg">verified</span><span class="label">Одобрено</span></div>
+      <div class="icon-tile"><span class="msr lg">pending</span><span class="label">Чака</span></div>
+      <div class="icon-tile"><span class="msr lg">arrow_upward</span><span class="label">Upvote</span></div>
+      <div class="icon-tile"><span class="msr lg">flag</span><span class="label">Докладвай</span></div>
+      <div class="icon-tile"><span class="msr lg">tune</span><span class="label">Филтри</span></div>
+    </div>
+  </section>
+
+  <section id="components">
+    <span class="eyebrow"><span class="msr sm">smart_button</span>Компоненти · 04</span>
+    <h2>Бутони</h2>
+    <div class="row">
+      <button class="btn btn-primary"><span class="msr sm">edit</span>Напиши ревю</button>
+      <button class="btn btn-secondary"><span class="msr sm">add_circle</span>Добави продукт</button>
+      <button class="btn btn-ghost">Отказ</button>
+      <button class="btn btn-danger"><span class="msr sm">delete</span>Изтрий</button>
+      <button class="btn btn-icon-only btn-ghost"><span class="msr">favorite</span></button>
+      <button class="btn btn-primary btn-sm">Малък бутон</button>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow"><span class="msr sm">verified</span>Компоненти · 05</span>
+    <h2>Печат на одобрение — signature елемент</h2>
+    <p class="section-desc">Основната механика на мамаИзбира е доверието: нов продукт се вижда едва след одобрение от модератор. Печатът прави тази идея видима.</p>
+    <div class="row" style="gap:32px; align-items:center;">
+      <div class="stamp"><span class="msr">verified</span>Одобрено<br>от мамаИзбира</div>
+      <div class="row" style="flex-direction:column; align-items:flex-start; gap:10px;">
+        <span class="badge badge-approved"><span class="msr">check_circle</span>Одобрен продукт</span>
+        <span class="badge badge-pending"><span class="msr">schedule</span>Чака одобрение</span>
+        <span class="badge badge-rejected"><span class="msr">cancel</span>Отхвърлен</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow"><span class="msr sm">category</span>Компоненти · 06</span>
+    <h2>Категории, табове и breadcrumbs</h2>
+    <div class="chip-row" style="margin-bottom:24px;">
+      <div class="chip active"><span class="msr sm">apps</span>Всички</div>
+      <div class="chip"><span class="msr sm">stroller</span>Колички</div>
+      <div class="chip"><span class="msr sm">high_chair</span>Столчета</div>
+      <div class="chip"><span class="msr sm">directions_car</span>Кошчета</div>
+      <div class="chip"><span class="msr sm">local_drink</span>Шишета</div>
+      <div class="chip"><span class="msr sm">toys</span>Играчки</div>
+    </div>
+    <div class="tabs" style="margin-bottom:24px;">
+      <div class="tab active">Най-нови</div>
+      <div class="tab">Най-полезни</div>
+      <div class="tab">Топ оценени</div>
+    </div>
+    <div class="breadcrumbs">
+      <a>Начало</a><span class="msr">chevron_right</span><a>Столчета за хранене</a><span class="msr">chevron_right</span><span class="current">Peg Pérego Siesta</span>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow"><span class="msr sm">grade</span>Компоненти · 07</span>
+    <h2>Оценка и гласуване</h2>
+    <div class="row" style="gap:40px;">
+      <div class="rating-line">
+        <div class="stars-row">
+          <span class="msr fill">star</span><span class="msr fill">star</span><span class="msr fill">star</span><span class="msr fill">star</span><span class="msr dim">star</span>
+        </div>
+        <span class="rating-num">4.2</span>
+      </div>
+      <div class="vote">
+        <button class="up"><span class="msr">arrow_upward</span></button>
+        <span class="vote-count">24</span>
+        <button class="down"><span class="msr">arrow_downward</span></button>
+      </div>
+      <div class="tooltip-demo">
+        <button class="btn btn-ghost btn-sm">Наведи за подсказка</button>
+        <div class="tooltip-bubble">Средно от 38 ревюта</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow"><span class="msr sm">search</span>Компоненти · 08</span>
+    <h2>Търсене и филтри</h2>
+    <div class="searchbar">
+      <span class="msr">search</span>
+      <input type="text" placeholder="Търси марка или модел...">
+    </div>
+    <div class="filter-row">
+      <button class="btn btn-ghost btn-sm"><span class="msr sm">tune</span>Филтри</button>
+      <button class="btn btn-ghost btn-sm"><span class="msr sm">sort</span>Сортирай: Най-полезни</button>
+      <button class="btn btn-ghost btn-sm"><span class="msr sm">star</span>4+ звезди</button>
+    </div>
+  </section>
+
+  <section id="cards">
+    <span class="eyebrow"><span class="msr sm">grid_view</span>Компоненти · 09</span>
+    <h2>Продуктова карта</h2>
+    <div class="grid-cards">
+      <div class="product-card">
+        <div class="product-top">
+          <div class="product-thumb"><span class="msr">stroller</span></div>
+          <span class="badge badge-approved"><span class="msr">check_circle</span>Одобрен</span>
+        </div>
+        <div>
+          <span class="product-cat"><span class="msr">stroller</span>Бебешки колички</span>
+          <h3 class="product-name">Chicco Best Friend Comfort</h3>
+          <p class="product-brand">Chicco · 3-в-1</p>
+        </div>
+        <div class="rating-line">
+          <div class="stars-row"><span class="msr fill">star</span><span class="msr fill">star</span><span class="msr fill">star</span><span class="msr fill">star</span><span class="msr dim">star</span></div>
+          <span class="rating-num">4.4</span>
+          <span style="color:var(--grey); font-size:12px;">· 38 ревюта</span>
+        </div>
+      </div>
+      <div class="product-card">
+        <div class="product-top">
+          <div class="product-thumb" style="background:var(--plum-tint); color:var(--berry);"><span class="msr">local_drink</span></div>
+          <span class="badge badge-pending"><span class="msr">schedule</span>Чака одобрение</span>
+        </div>
+        <div>
+          <span class="product-cat"><span class="msr">local_drink</span>Шишета за хранене</span>
+          <h3 class="product-name">Philips Avent Natural</h3>
+          <p class="product-brand">Philips Avent · 260мл</p>
+        </div>
+        <div class="rating-line">
+          <span style="color:var(--grey); font-size:13px;">Все още няма ревюта</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow"><span class="msr sm">rate_review</span>Компоненти · 10</span>
+    <h2>Ревю карта</h2>
+    <div class="review-card">
+      <div class="avatar">ИТ</div>
+      <div style="flex:1;">
+        <div class="review-name">Ивелина Т.</div>
+        <div class="review-meta">майка на 2 · преди 5 дни</div>
+        <div class="stars-row" style="margin-top:6px;"><span class="msr fill">star</span><span class="msr fill">star</span><span class="msr fill">star</span><span class="msr fill">star</span><span class="msr fill">star</span></div>
+        <p class="review-text">Използваме столчето вече 8 месеца — миe се лесно, а таблата се сваля с едно движение дори с бебе на ръце.</p>
+        <div class="review-foot">
+          <div class="vote">
+            <button class="up"><span class="msr sm">arrow_upward</span></button>
+            <span class="vote-count">24</span>
+            <button class="down"><span class="msr sm">arrow_downward</span></button>
+          </div>
+          <button class="btn btn-ghost btn-sm"><span class="msr sm">flag</span>Докладвай</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="patterns">
+    <span class="eyebrow"><span class="msr sm">dashboard</span>Модели · 11</span>
+    <h2>Статистика</h2>
+    <div class="stats-strip">
+      <div class="stat-card"><span class="msr lg">inventory_2</span><div class="stat-num">1 284</div><div class="stat-label">Одобрени продукта</div></div>
+      <div class="stat-card"><span class="msr lg">rate_review</span><div class="stat-num">6 730</div><div class="stat-label">Ревюта</div></div>
+      <div class="stat-card"><span class="msr lg">group</span><div class="stat-num">4 102</div><div class="stat-label">Регистрирани мами</div></div>
+      <div class="stat-card"><span class="msr lg">pending_actions</span><div class="stat-num">18</div><div class="stat-label">Чакащи одобрение</div></div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow"><span class="msr sm">fact_check</span>Модели · 12</span>
+    <h2>Admin — опашка за одобрение</h2>
+    <p class="section-desc">Таблица, по която модератор одобрява или отхвърля новодобавени продукти.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Продукт</th><th>Категория</th><th>Добавен от</th><th>Дата</th><th>Действия</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="table-product"><div class="table-thumb"><span class="msr">local_drink</span></div>Philips Avent Natural</div></td>
+            <td>Шишета</td>
+            <td>Мария К.</td>
+            <td>17.08.2026</td>
+            <td><div class="row-actions"><button class="btn btn-icon-only btn-primary" style="width:34px;height:34px;"><span class="msr sm">check</span></button><button class="btn btn-icon-only btn-danger" style="width:34px;height:34px;"><span class="msr sm">close</span></button></div></td>
+          </tr>
+          <tr>
+            <td><div class="table-product"><div class="table-thumb"><span class="msr">toys</span></div>Fisher-Price Rainforest</div></td>
+            <td>Играчки</td>
+            <td>Георги П.</td>
+            <td>16.08.2026</td>
+            <td><div class="row-actions"><button class="btn btn-icon-only btn-primary" style="width:34px;height:34px;"><span class="msr sm">check</span></button><button class="btn btn-icon-only btn-danger" style="width:34px;height:34px;"><span class="msr sm">close</span></button></div></td>
+          </tr>
+          <tr>
+            <td><div class="table-product"><div class="table-thumb"><span class="msr">stroller</span></div>Cybex Balios S</div></td>
+            <td>Колички</td>
+            <td>Ивелина Т.</td>
+            <td>16.08.2026</td>
+            <td><div class="row-actions"><button class="btn btn-icon-only btn-primary" style="width:34px;height:34px;"><span class="msr sm">check</span></button><button class="btn btn-icon-only btn-danger" style="width:34px;height:34px;"><span class="msr sm">close</span></button></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow"><span class="msr sm">notifications_active</span>Модели · 13</span>
+    <h2>Съобщения — alerts и toast</h2>
+    <div class="row" style="flex-direction:column; align-items:stretch; gap:12px; max-width:520px;">
+      <div class="alert alert-success"><span class="msr">check_circle</span><div><b>Продуктът е одобрен</b>Cybex Balios S вече е видим в каталога.</div></div>
+      <div class="alert alert-warning"><span class="msr">schedule</span><div><b>Чака преглед</b>Продуктът ти изчаква одобрение от модератор.</div></div>
+      <div class="alert alert-error"><span class="msr">error</span><div><b>Неуспешно изпращане</b>Провери задължителните полета и опитай пак.</div></div>
+      <div class="alert alert-info"><span class="msr">info</span><div><b>Съвет</b>Провери дали продуктът вече съществува, преди да добавиш нов.</div></div>
+    </div>
+    <div class="row" style="margin-top:20px;">
+      <div class="toast"><span class="msr">check_circle</span>Ревюто е публикувано успешно</div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow"><span class="msr sm">inbox</span>Модели · 14</span>
+    <h2>Празно състояние</h2>
+    <div class="empty-state">
+      <span class="msr">search_off</span>
+      <h3>Няма намерени продукти</h3>
+      <p>Не открихме продукт по това търсене. Провери правописа или добави нов продукт в каталога.</p>
+      <button class="btn btn-primary"><span class="msr sm">add_circle</span>Добави продукт</button>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow"><span class="msr sm">web_asset</span>Модели · 15</span>
+    <h2>Модален диалог</h2>
+    <div class="modal-backdrop">
+      <div class="modal">
+        <div class="modal-head">
+          <h3 style="margin:0;">Изтрий ревю?</h3>
+          <span class="msr">close</span>
+        </div>
+        <p>Това действие е необратимо. Ревюто ти ще бъде премахнато от продукта завинаги.</p>
+        <div class="row">
+          <button class="btn btn-danger"><span class="msr sm">delete</span>Изтрий</button>
+          <button class="btn btn-ghost">Отказ</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow"><span class="msr sm">view_agenda</span>Модели · 16</span>
+    <h2>Skeleton / зареждане и пагинация</h2>
+    <div class="grid-cards three" style="margin-bottom:28px;">
+      <div class="product-card">
+        <div class="skeleton" style="width:52px;height:52px;border-radius:10px;"></div>
+        <div class="skeleton" style="width:70%;height:14px;"></div>
+        <div class="skeleton" style="width:40%;height:12px;"></div>
+        <div class="skeleton" style="width:90%;height:12px;"></div>
+      </div>
+      <div class="product-card">
+        <div class="skeleton" style="width:52px;height:52px;border-radius:10px;"></div>
+        <div class="skeleton" style="width:60%;height:14px;"></div>
+        <div class="skeleton" style="width:35%;height:12px;"></div>
+        <div class="skeleton" style="width:80%;height:12px;"></div>
+      </div>
+      <div class="product-card">
+        <div class="skeleton" style="width:52px;height:52px;border-radius:10px;"></div>
+        <div class="skeleton" style="width:65%;height:14px;"></div>
+        <div class="skeleton" style="width:45%;height:12px;"></div>
+        <div class="skeleton" style="width:85%;height:12px;"></div>
+      </div>
+    </div>
+    <div class="pagination">
+      <div class="page-btn"><span class="msr">chevron_left</span></div>
+      <div class="page-btn active">1</div>
+      <div class="page-btn">2</div>
+      <div class="page-btn">3</div>
+      <div class="page-btn"><span class="msr">chevron_right</span></div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow"><span class="msr sm">groups</span>Модели · 17</span>
+    <h2>Група аватари</h2>
+    <div class="row" style="gap:20px; align-items:center;">
+      <div class="avatar-group">
+        <div class="avatar">ИТ</div>
+        <div class="avatar" style="background:var(--carrot-tint); color:var(--carrot-dark);">МК</div>
+        <div class="avatar" style="background:var(--sage-tint); color:var(--sage-dark);">ГП</div>
+        <div class="avatar more">+12</div>
+      </div>
+      <span style="font-size:13px; color:var(--grey);">16 родители одобряват този избор</span>
+    </div>
+  </section>
+
+  <section id="forms">
+    <span class="eyebrow"><span class="msr sm">edit_note</span>Компоненти · 18</span>
+    <h2>Форма — добавяне на продукт</h2>
+    <div class="form-card">
+      <div class="field">
+        <label>Марка</label>
+        <div class="field-input-wrap">
+          <span class="msr sm">sell</span>
+          <input type="text" placeholder="напр. Chicco">
+        </div>
+      </div>
+      <div class="field">
+        <label>Модел</label>
+        <input type="text" placeholder="напр. Best Friend Comfort">
+      </div>
+      <div class="field">
+        <label>Тип продукт</label>
+        <select>
+          <option>Бебешки колички</option>
+          <option>Столчета за хранене</option>
+          <option>Кошчета за кола</option>
+          <option>Шишета за хранене</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Оценка</label>
+        <div class="star-input">
+          <span class="msr fill">star</span><span class="msr fill">star</span><span class="msr fill">star</span><span class="msr fill">star</span><span class="msr">star</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Описание</label>
+        <textarea rows="3" placeholder="Разкажи повече за продукта..."></textarea>
+        <p class="field-hint"><span class="msr">info</span>Продуктът ще бъде видим след одобрение от модератор.</p>
+      </div>
+      <button class="btn btn-primary" style="width:100%; justify-content:center;"><span class="msr sm">send</span>Изпрати за одобрение</button>
+    </div>
+  </section>
+
+  <footer>мамаИзбира · Design System v2.0 · React + Firebase · Mobile-first · Иконография: Material Symbols Rounded</footer>
+
+  <div class="bottom-nav">
+    <a class="active"><span class="msr fill">home</span>Начало</a>
+    <a><span class="msr">category</span>Категории</a>
+    <div class="fab"><span class="msr">add</span></div>
+    <a><span class="msr">favorite_border</span>Любими</a>
+    <a><span class="msr">person</span>Профил</a>
+  </div>
+
+</body>
+</html>
