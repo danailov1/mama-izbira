@@ -98,6 +98,7 @@ export class ProductService {
         throw new DomainError(
           'duplicate',
           `Продуктът "${existing.brand} ${existing.model}" вече съществува в каталога.`,
+          { product: existing },
         )
       }
     }

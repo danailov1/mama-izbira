@@ -6,6 +6,8 @@ export class DomainError extends Error {
   constructor(
     public code: string,
     message: string,
+    /** Optional machine-readable payload (e.g. the matched duplicate product). */
+    public details?: unknown,
   ) {
     super(message)
     this.name = 'DomainError'

@@ -261,6 +261,23 @@ describe('ProductService', () => {
     )
   })
 
+  it('includes the matched product in the duplicate error so the UI can suggest it', async () => {
+    const products = new FakeProductRepository()
+    products.products = [product('p1', { brand: 'LEGO', model: 'DUPLO Farm' })]
+    const service = new ProductService(products, new FakeCategoryRepository(), matcher)
+
+    await assert.rejects(
+      () => service.addProduct({ brand: 'lego', model: 'duplo-farm', categoryId: 'cat1' }, user('u1')),
+      (error: unknown) => {
+        assert.ok(error instanceof DomainError)
+        assert.equal(error.code, 'duplicate')
+        const details = error.details as { product?: Product }
+        assert.equal(details.product?.id, 'p1')
+        return true
+      },
+    )
+  })
+
   it('suggests the existing product while the user is typing', async () => {
     const products = new FakeProductRepository()
     products.products = [product('p1', { brand: 'LEGO', model: 'DUPLO Farm' })]
