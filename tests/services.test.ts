@@ -90,6 +90,8 @@ class FakeProductRepository implements ProductRepository {
   subscribeMine = () => () => {}
   subscribePending = () => () => {}
   subscribeAll = () => () => {}
+  listForMatching = async (limit = 500) =>
+    this.products.filter((p) => p.status === 'approved').slice(0, limit)
   getPublicStats = async (): Promise<PublicStats> => ({ products: this.products.length, reviews: 0 })
 }
 
@@ -246,6 +248,27 @@ describe('ProductService', () => {
       () => service.addProduct({ brand: 'chicco', model: 'best friend', categoryId: 'cat1' }, user('u1')),
       'duplicate',
     )
+  })
+
+  it('flags "lego duplo-farm" against an existing LEGO / DUPLO Farm', async () => {
+    const products = new FakeProductRepository()
+    products.products = [product('p1', { brand: 'LEGO', model: 'DUPLO Farm' })]
+    const service = new ProductService(products, new FakeCategoryRepository(), matcher)
+
+    await expectDomainError(
+      () => service.addProduct({ brand: 'lego', model: 'duplo-farm', categoryId: 'cat1' }, user('u1')),
+      'duplicate',
+    )
+  })
+
+  it('suggests the existing product while the user is typing', async () => {
+    const products = new FakeProductRepository()
+    products.products = [product('p1', { brand: 'LEGO', model: 'DUPLO Farm' })]
+    const service = new ProductService(products, new FakeCategoryRepository(), matcher)
+
+    const suggestions = await service.suggestDuplicates('lego', 'duplo-farm')
+    assert.equal(suggestions[0]?.product.id, 'p1')
+    assert.ok(suggestions[0].score > 0.5, `expected a strong suggestion, got ${suggestions[0]?.score}`)
   })
 
   it('requires valid category and brand/model lengths', async () => {

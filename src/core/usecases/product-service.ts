@@ -1,5 +1,5 @@
 import type { NewProduct, Product } from '../domain/entities/product'
-import { normalizeName, productTitle } from '../domain/entities/product'
+import { productTitle } from '../domain/entities/product'
 import type { CategoryRepository } from '../domain/ports/category-repository'
 import type { ProductRepository, PublicStats } from '../domain/ports/product-repository'
 import type { TextMatcher } from '../domain/ports/text-matcher'
@@ -8,8 +8,8 @@ import { DomainError, isModerator } from './auth-service'
 
 const DUPLICATE_SCORE = 0.92
 const DUPLICATE_CANDIDATES = 500
-const SUGGESTION_CANDIDATES = 50
 const SUGGESTION_MIN_SCORE = 0.2
+const CANDIDATE_TTL_MS = 60_000
 
 export interface DuplicateSuggestion {
   product: Product
@@ -17,6 +17,8 @@ export interface DuplicateSuggestion {
 }
 
 export class ProductService {
+  private candidateCache: { at: number; products: Product[] } | null = null
+
   constructor(
     private readonly products: ProductRepository,
     private readonly categories: CategoryRepository,
@@ -24,17 +26,22 @@ export class ProductService {
   ) {}
 
   /**
-   * First token of the brand (or model) — used as the Firestore `searchName`
-   * prefix so fuzzy scoring only ever sees a bounded candidate set.
+   * Bounded approved-product set for local scoring. Cached briefly so the live
+   * duplicate suggestions in the form don't re-read the catalog on every keypress.
+   * Deliberately independent of `searchName` so products created before that
+   * field existed are still considered.
    */
-  private namePrefix(brand: string, model: string): string {
-    return normalizeName(brand).split(' ')[0] || normalizeName(model).split(' ')[0]
+  private async candidates(): Promise<Product[]> {
+    if (this.candidateCache && Date.now() - this.candidateCache.at < CANDIDATE_TTL_MS) {
+      return this.candidateCache.products
+    }
+    const products = await this.products.listForMatching(DUPLICATE_CANDIDATES)
+    this.candidateCache = { at: Date.now(), products }
+    return products
   }
 
-  private async candidates(brand: string, model: string, limit: number): Promise<Product[]> {
-    const prefix = this.namePrefix(brand, model)
-    if (!prefix) return []
-    return this.products.query({ status: 'approved', search: prefix, limit })
+  private invalidateCandidates(): void {
+    this.candidateCache = null
   }
 
   subscribeMine(userId: string, cb: (products: Product[]) => void): () => void {
@@ -80,7 +87,7 @@ export class ProductService {
     }
 
     const query = `${brand} ${model}`
-    const candidates = await this.candidates(brand, model, DUPLICATE_CANDIDATES)
+    const candidates = await this.candidates()
     if (candidates.length > 0) {
       const matches = await this.matcher.analyze(query, candidates.map(productTitle))
       const duplicateIndex = matches.findIndex(
@@ -95,7 +102,7 @@ export class ProductService {
       }
     }
 
-    return this.products.create(
+    const created = await this.products.create(
       {
         brand,
         model,
@@ -104,12 +111,14 @@ export class ProductService {
       },
       user.id,
     )
+    this.invalidateCandidates()
+    return created
   }
 
   async suggestDuplicates(brand: string, model: string): Promise<DuplicateSuggestion[]> {
     const query = `${brand} ${model}`.trim()
     if (query.length < 3) return []
-    const candidates = await this.candidates(brand, model, SUGGESTION_CANDIDATES)
+    const candidates = await this.candidates()
     if (candidates.length === 0) return []
     const matches = await this.matcher.analyze(query, candidates.map(productTitle))
     return candidates
@@ -122,6 +131,7 @@ export class ProductService {
   async approve(productId: string, moderator: AppUser): Promise<void> {
     this.assertModerator(moderator)
     await this.products.setStatus(productId, 'approved')
+    this.invalidateCandidates()
   }
 
   async reject(productId: string, reason: string, moderator: AppUser): Promise<void> {
@@ -129,6 +139,7 @@ export class ProductService {
     if (reason.trim().length < 3)
       throw new DomainError('invalid_reason', 'Причините за отхвърляне трябва да са поне 3 символа.')
     await this.products.setStatus(productId, 'rejected', reason.trim())
+    this.invalidateCandidates()
   }
 
   private assertModerator(user: AppUser | null): void {

@@ -14,7 +14,8 @@
     "lint": "eslint .",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"tests/**/*.ts\" \"*.{json,js,html}\"",
     "seed": "tsx scripts/seed.ts",
-    "seed:admin": "tsx scripts/create-admin.ts"
+    "seed:admin": "tsx scripts/create-admin.ts",
+    "backfill:search-names": "tsx scripts/backfill-search-names.ts"
   },
   "dependencies": {
     "firebase": "^11.0.0",

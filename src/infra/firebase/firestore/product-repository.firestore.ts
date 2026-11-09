@@ -119,6 +119,17 @@ export class FirestoreProductRepository implements ProductRepository {
     })
   }
 
+  async listForMatching(limitCount = 500): Promise<Product[]> {
+    const q = query(
+      this.coll,
+      where('status', '==', 'approved'),
+      orderBy('createdAt', 'desc'),
+      limit(limitCount),
+    )
+    const snap = await getDocs(q)
+    return snap.docs.map(toProduct)
+  }
+
   subscribeMine(userId: string, cb: (products: Product[]) => void): () => void {
     const q = query(this.coll, where('createdBy', '==', userId), orderBy('createdAt', 'desc'))
     return onSnapshot(

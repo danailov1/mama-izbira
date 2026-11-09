@@ -100,6 +100,9 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'rejectionReason'])
         && (request.resource.data.status == 'approved'
             || (request.resource.data.status == 'rejected' && request.resource.data.rejectionReason is string)))
+        || (isModerator()
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['searchName'])
+            && request.resource.data.searchName is string)
         || (isSignedIn()
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ratingSum', 'reviewsCount'])
             && request.resource.data.ratingSum is number
