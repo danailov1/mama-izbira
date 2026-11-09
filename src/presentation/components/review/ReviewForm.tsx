@@ -38,7 +38,17 @@ export function ReviewForm({
       }
       onSaved()
     } catch (e) {
-      setError(e instanceof DomainError ? e.message : 'Нещо се обърка — опитай отново.')
+      console.error('[review:save] failed', e)
+      const candidate = e as { code?: string; name?: string; message?: string } | null
+      if (e instanceof DomainError || candidate?.name === 'DomainError') {
+        setError(candidate?.message || 'Нещо се обърка при записването. Опитай отново.')
+      } else if (candidate?.code === 'permission-denied') {
+        setError('Нямаш права да запишеш ревюто. Провери дали си влязъл в профила.')
+      } else if (candidate?.code === 'unavailable' || candidate?.code === 'deadline-exceeded') {
+        setError('Няма връзка със сървъра. Провери интернет връзката и опитай отново.')
+      } else {
+        setError('Нещо се обърка при записването. Опитай отново.')
+      }
     } finally {
       setBusy(false)
     }

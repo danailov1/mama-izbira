@@ -87,6 +87,7 @@ export function ProductForm({ categories }: { categories: Category[] }) {
       showToast('Продуктът е изпратен за одобрение', 'schedule')
       navigate(`/products/${p.id}`)
     } catch (e) {
+      console.error('[product:add] failed', e)
       const code = (e as { code?: string } | null)?.code
       if (code === 'duplicate') {
         const existing = matchedProduct(e)
