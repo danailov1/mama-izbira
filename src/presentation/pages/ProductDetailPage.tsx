@@ -6,7 +6,8 @@ import type { Review } from '@/core/domain/entities/review'
 import type { AppUser } from '@/core/domain/entities/user'
 import { getServices } from '@/infra/di'
 import { useAuth } from '@/presentation/auth/AuthContext'
-import { timeAgo } from '@/presentation/lib/format'
+import { plural, timeAgo } from '@/presentation/lib/format'
+import { usePageTitle } from '@/presentation/lib/usePageTitle'
 import { Msr } from '@/presentation/components/ui/Msr'
 import { Stars } from '@/presentation/components/ui/Stars'
 import { ProductBadge } from '@/presentation/components/ui/Badge'
@@ -27,33 +28,42 @@ export function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null)
   const [category, setCategory] = useState<Category | null>(null)
   const [reviews, setReviews] = useState<Review[]>([])
-  const [myReview, setMyReview] = useState<Review | null>(null)
   const [authors, setAuthors] = useState<Record<string, string>>({})
   const [creator, setCreator] = useState<AppUser | null>(null)
   const [notFound, setNotFound] = useState(false)
+  const [imageFailed, setImageFailed] = useState(false)
 
   const editing = searchParams.get('edit') === 'my'
+  const myReview = user ? (reviews.find((r) => r.userId === user.id) ?? null) : null
+
+  usePageTitle(product ? `${product.brand} ${product.model}` : 'Продукт')
 
   useEffect(() => {
     if (!id) return
     let active = true
+    setNotFound(false)
+    setProduct(null)
+    setImageFailed(false)
     const { catalog } = getServices()
 
-    catalog.getProduct(id).then((p) => {
-      if (!active) return
-      if (!p) {
-        setNotFound(true)
-        return
-      }
-      setProduct(p)
-      catalog.getCategoryById(p.categoryId).then((c) => active && setCategory(c))
-      if (p.createdBy) {
-        getServices()
-          .auth.getProfile(p.createdBy)
-          .then((u) => active && setCreator(u))
-          .catch(() => {})
-      }
-    })
+    catalog
+      .getProduct(id)
+      .then((p) => {
+        if (!active) return
+        if (!p) {
+          setNotFound(true)
+          return
+        }
+        setProduct(p)
+        catalog.getCategoryById(p.categoryId).then((c) => active && setCategory(c))
+        if (p.createdBy) {
+          getServices()
+            .auth.getProfile(p.createdBy)
+            .then((u) => active && setCreator(u))
+            .catch(() => {})
+        }
+      })
+      .catch(() => active && setNotFound(true))
     return () => {
       active = false
     }
@@ -63,8 +73,12 @@ export function ProductDetailPage() {
     if (!id) return
     const { catalog } = getServices()
     const unsub = catalog.subscribeProduct(id, (p) => {
-      if (p) setProduct(p)
-      else setNotFound(true)
+      if (p) {
+        setProduct(p)
+        setNotFound(false)
+      } else {
+        setNotFound(true)
+      }
     })
     return unsub
   }, [id])
@@ -74,20 +88,6 @@ export function ProductDetailPage() {
     const unsub = getServices().reviews.subscribeByProduct(id, setReviews)
     return unsub
   }, [id])
-
-  useEffect(() => {
-    if (!id || !user) {
-      setMyReview(null)
-      return
-    }
-    let active = true
-    getServices()
-      .reviews.getMyReview(id, user.id)
-      .then((r) => active && setMyReview(r))
-    return () => {
-      active = false
-    }
-  }, [id, user])
 
   useEffect(() => {
     const missing = new Set<string>()
@@ -114,9 +114,7 @@ export function ProductDetailPage() {
   const reviewAuthors = useMemo(() => {
     const map: Record<string, string> = {}
     reviews.forEach((r) => {
-      const cached = authorCache.get(r.userId)
-      if (cached) map[r.userId] = cached
-      else map[r.userId] = 'Родител'
+      map[r.userId] = authors[r.userId] ?? authorCache.get(r.userId) ?? 'Родител'
     })
     return map
   }, [reviews, authors])
@@ -170,7 +168,15 @@ export function ProductDetailPage() {
 
       <div className="product-hero">
         <div className="product-thumb berry" style={{ width: 72, height: 72 }}>
-          <Msr icon={category?.icon ?? 'inventory_2'} size="lg" />
+          {product.imageUrl && !imageFailed ? (
+            <img
+              src={product.imageUrl}
+              alt={`${product.brand} ${product.model}`}
+              onError={() => setImageFailed(true)}
+            />
+          ) : (
+            <Msr icon={category?.icon ?? 'inventory_2'} size="lg" />
+          )}
         </div>
         <div className="product-hero-info">
           <span className="product-cat">
@@ -187,7 +193,7 @@ export function ProductDetailPage() {
                 <Stars rating={product.avgRating} size="sm" />
                 <span className="rating-num">{product.avgRating.toFixed(1)}</span>
                 <span className="muted" style={{ fontSize: 12 }}>
-                  · {product.reviewsCount} ревю{product.reviewsCount === 1 ? '' : 'та'}
+                  · {product.reviewsCount} {plural(product.reviewsCount, 'ревю', 'ревюта')}
                 </span>
               </div>
             )}
@@ -305,8 +311,8 @@ export function ProductDetailPage() {
           <Alert kind="info">
             <b>Модераторски панел</b>
             {product.status === 'pending'
-              ? 'Продуктът чака решение — виж опашката за одобрение.'
-              : 'Статусът е окончателен. Можеш да промениш статуса от опашката.'}
+              ? 'Продуктът чака решение — виж опашката за одобрение в Админ панел → Продукти.'
+              : 'Можеш да промениш статуса от Админ панел → Продукти → „Всички“. Там се показват и вече решените продукти.'}
           </Alert>
         </section>
       )}

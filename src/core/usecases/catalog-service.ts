@@ -1,7 +1,7 @@
 import type { Category } from '../domain/entities/category'
 import type { Product } from '../domain/entities/product'
 import type { CategoryRepository } from '../domain/ports/category-repository'
-import type { ProductQuery, ProductRepository } from '../domain/ports/product-repository'
+import type { ProductQuery, ProductRepository, PublicStats } from '../domain/ports/product-repository'
 
 export class CatalogService {
   constructor(
@@ -34,5 +34,9 @@ export class CatalogService {
 
   subscribeProduct(id: string, cb: (product: Product | null) => void): () => void {
     return this.products.subscribeById(id, cb)
+  }
+
+  getStats(): Promise<PublicStats> {
+    return this.products.getPublicStats()
   }
 }

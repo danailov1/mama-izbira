@@ -181,7 +181,7 @@ async function main() {
   const registry = new Map<string, RegEntry>()
   let signedIn: string | null = null
 
-  async function use(key: string): Promise<AppUser> {
+  async function signInAs(key: string): Promise<AppUser> {
     const entry = registry.get(key)
     if (!entry) throw new Error(`Непознат потребител: ${key}`)
     if (signedIn === key && entry.user) return entry.user
@@ -200,7 +200,7 @@ async function main() {
   console.log('\n1/6 Потребители…')
   await ensureAuthUser(adminEmail, adminPassword)
   registry.set('admin', { email: adminEmail, password: adminPassword, displayName: '' })
-  await use('admin')
+  await signInAs('admin')
   for (const u of data.users) {
     await ensureAuthUser(u.email, seedPassword)
     registry.set(u.key, { email: u.email, password: seedPassword, displayName: u.displayName })
@@ -209,7 +209,7 @@ async function main() {
 
   // 1) категории
   console.log('2/6 Категории…')
-  await use('admin')
+  await signInAs('admin')
   const catSnap = await getDocs(collection(db, 'categories'))
   const catIdByName = new Map<string, string>()
   catSnap.forEach((d) => catIdByName.set(String(d.data().name), d.id))
@@ -218,7 +218,7 @@ async function main() {
   for (const c of data.categories) {
     let id = catIdByName.get(c.name)
     if (!id) {
-      const created = await services.moderation.addCategory({ name: c.name, icon: c.icon }, await use('admin'))
+      const created = await services.moderation.addCategory({ name: c.name, icon: c.icon }, await signInAs('admin'))
       id = created.id
       catIdByName.set(c.name, id)
       catsCreated++
@@ -229,7 +229,7 @@ async function main() {
 
   // 2) продукти (създават се като pending от автора, после admin задава статуса)
   console.log('3/6 Продукти…')
-  await use('admin')
+  await signInAs('admin')
   const prodSnap = await getDocs(collection(db, 'products'))
   const prodIdByKeyName = new Map<string, string>()
   prodSnap.forEach((d) => {
@@ -247,12 +247,12 @@ async function main() {
       prodSkipped++
       continue
     }
-    const author = await use(p.author)
+    const author = await signInAs(p.author)
     const created = await services.products.addProduct(
       { brand: p.brand, model: p.model, categoryId: catIdBySlug.get(p.categorySlug)!, imageUrl: p.imageUrl ?? undefined },
       author,
     )
-    const admin = await use('admin')
+    const admin = await signInAs('admin')
     if (p.status === 'approved') await services.products.approve(created.id, admin)
     else if (p.status === 'rejected')
       await services.products.reject(created.id, p.rejectionReason ?? 'Не отговаря на изискванията.', admin)
@@ -269,7 +269,7 @@ async function main() {
   let revSkipped = 0
   for (const r of data.reviews) {
     const productId = productIdByKey.get(r.product)!
-    const author = await use(r.author)
+    const author = await signInAs(r.author)
     const existing = await getDoc(doc(db, 'products', productId, 'reviews', author.id))
     if (existing.exists()) {
       reviewIdByKey.set(`${r.product}|${r.author}`, author.id)
@@ -289,7 +289,7 @@ async function main() {
   for (const v of data.votes) {
     const productId = productIdByKey.get(v.product)!
     const reviewId = reviewIdByKey.get(`${v.product}|${v.reviewAuthor}`)!
-    const voter = await use(v.voter)
+    const voter = await signInAs(v.voter)
     const existing = await getDoc(doc(db, 'products', productId, 'reviews', reviewId, 'votes', voter.id))
     if (existing.exists()) {
       votesSkipped++
@@ -302,7 +302,7 @@ async function main() {
 
   // 5) доклади
   console.log('6/6 Доклади…')
-  await use('admin')
+  await signInAs('admin')
   const reportSnap = await getDocs(collection(db, 'reports'))
   const existingReports = new Set<string>()
   reportSnap.forEach((d) => {
@@ -313,8 +313,8 @@ async function main() {
   let reportsSkipped = 0
   for (const rep of data.reports) {
     const productId = productIdByKey.get(rep.product)!
-    const reviewId = (await use(rep.reviewAuthor)).id
-    const reporter = await use(rep.reporter)
+    const reviewId = (await signInAs(rep.reviewAuthor)).id
+    const reporter = await signInAs(rep.reporter)
     const key = `${productId}|${reviewId}|${reporter.id}`
     if (existingReports.has(key)) {
       reportsSkipped++

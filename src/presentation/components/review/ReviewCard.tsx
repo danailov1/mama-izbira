@@ -8,6 +8,7 @@ import { initials, timeAgo } from '@/presentation/lib/format'
 import { Stars } from '../ui/Stars'
 import { VoteWidget } from '../ui/VoteWidget'
 import { Modal } from '../ui/Modal'
+import { ConfirmModal } from '../ui/ConfirmModal'
 import { Msr } from '../ui/Msr'
 import { useToast } from '../ui/Toast'
 
@@ -29,18 +30,31 @@ export function ReviewCard({
   const navigate = useNavigate()
   const [reporting, setReporting] = useState(false)
   const [reportReason, setReportReason] = useState('')
+  const [confirming, setConfirming] = useState<'delete' | 'remove' | null>(null)
   const [removing, setRemoving] = useState(false)
 
   const services = getServices()
   const canVote = !!session && !myReview
 
   const requireAuth = () => {
-    showToast('Влез в профила, за да гласуваш', 'info')
+    showToast('Влез в профила, за да продължиш', 'info')
     navigate('/auth')
   }
 
+  const openReport = () => {
+    if (!session) {
+      requireAuth()
+      return
+    }
+    setReporting(true)
+  }
+
   const submitReport = async () => {
-    if (!user) return
+    if (!user) {
+      setReporting(false)
+      requireAuth()
+      return
+    }
     try {
       await services.reviews.reportReview(review.productId, review.id, reportReason, user)
       setReporting(false)
@@ -53,7 +67,6 @@ export function ReviewCard({
 
   const moderateRemove = async () => {
     if (!user) return
-    if (!window.confirm('Премахване на това ревю? Действието е необратимо.')) return
     setRemoving(true)
     try {
       await services.reviews.moderateRemove(review.productId, review.id, user)
@@ -63,6 +76,22 @@ export function ReviewCard({
       showToast(e instanceof Error ? e.message : 'Грешка', 'error')
     } finally {
       setRemoving(false)
+      setConfirming(null)
+    }
+  }
+
+  const deleteReview = async () => {
+    if (!user) return
+    setRemoving(true)
+    try {
+      await services.reviews.deleteReview(review.productId, review.id, user.id)
+      showToast('Ревюто е изтрито', 'delete')
+      onChanged?.()
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'Грешка', 'error')
+    } finally {
+      setRemoving(false)
+      setConfirming(null)
     }
   }
 
@@ -94,7 +123,7 @@ export function ReviewCard({
           />
           <div className="review-actions">
             {!myReview && (
-              <button className="btn btn-ghost btn-sm" onClick={() => setReporting(true)}>
+              <button className="btn btn-ghost btn-sm" onClick={openReport}>
                 <Msr icon="flag" size="sm" />
                 Докладвай
               </button>
@@ -105,26 +134,18 @@ export function ReviewCard({
                   <Msr icon="edit" size="sm" />
                   Редактирай
                 </button>
-                <button
-                  className="btn btn-danger btn-sm"
-                  onClick={async () => {
-                    if (!window.confirm('Изтриване на ревюто? Действието е необратимо.')) return
-                    try {
-                      await services.reviews.deleteReview(review.productId, review.id, user!.id)
-                      showToast('Ревюто е изтрито', 'delete')
-                      onChanged?.()
-                    } catch (e) {
-                      showToast(e instanceof Error ? e.message : 'Грешка', 'error')
-                    }
-                  }}
-                >
+                <button className="btn btn-danger btn-sm" onClick={() => setConfirming('delete')}>
                   <Msr icon="delete" size="sm" />
                   Изтрий
                 </button>
               </>
             )}
             {!myReview && isModerator(user) && (
-              <button className="btn btn-danger btn-sm" disabled={removing} onClick={moderateRemove}>
+              <button
+                className="btn btn-danger btn-sm"
+                disabled={removing}
+                onClick={() => setConfirming('remove')}
+              >
                 <Msr icon="remove_circle" size="sm" />
                 Премахни
               </button>
@@ -155,6 +176,30 @@ export function ReviewCard({
             </button>
           </div>
         </Modal>
+      )}
+
+      {confirming === 'delete' && (
+        <ConfirmModal
+          title="Изтрий ревюто"
+          message="Сигурен ли си? Действието е необратимо."
+          confirmLabel="Изтрий"
+          danger
+          busy={removing}
+          onConfirm={deleteReview}
+          onClose={() => setConfirming(null)}
+        />
+      )}
+
+      {confirming === 'remove' && (
+        <ConfirmModal
+          title="Премахни ревюто"
+          message="Ревюто ще бъде скрито от всички. Действието е необратимо."
+          confirmLabel="Премахни"
+          danger
+          busy={removing}
+          onConfirm={moderateRemove}
+          onClose={() => setConfirming(null)}
+        />
       )}
     </div>
   )

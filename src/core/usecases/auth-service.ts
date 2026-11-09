@@ -27,6 +27,12 @@ export class AuthService {
     return this.users.upsertFromAuth(session.uid, session.email, session.displayName)
   }
 
+  async completeRedirectSignIn(): Promise<AppUser | null> {
+    const session = await this.auth.completeRedirectSignIn()
+    if (!session) return null
+    return this.users.upsertFromAuth(session.uid, session.email, session.displayName)
+  }
+
   async signInWithEmail(email: string, password: string): Promise<AppUser> {
     const session = await this.auth.signInWithEmail(email, password)
     return this.users.upsertFromAuth(session.uid, session.email, session.displayName)

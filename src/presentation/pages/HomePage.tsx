@@ -4,24 +4,30 @@ import type { Category } from '@/core/domain/entities/category'
 import type { Product } from '@/core/domain/entities/product'
 import { getServices } from '@/infra/di'
 import { Msr } from '@/presentation/components/ui/Msr'
+import { EmptyState } from '@/presentation/components/ui/EmptyState'
 import { ProductCard } from '@/presentation/components/product/ProductCard'
+import { plural } from '@/presentation/lib/format'
+import { usePageTitle } from '@/presentation/lib/usePageTitle'
 
 export function HomePage() {
   const navigate = useNavigate()
   const [categories, setCategories] = useState<Category[]>([])
   const [topProducts, setTopProducts] = useState<Product[]>([])
+  const [loadingTop, setLoadingTop] = useState(true)
   const [stats, setStats] = useState<{ products: number; reviews: number }>({ products: 0, reviews: 0 })
+  usePageTitle()
 
   useEffect(() => {
     const { catalog } = getServices()
     const unsubCat = catalog.subscribeCategories(setCategories)
-    catalog.getApproved({ sort: 'rating', limit: 6 }).then(setTopProducts).catch(() => {})
     catalog
-      .getApproved({ limit: 200 })
-      .then((list) => {
-        const reviewCount = list.reduce((s, p) => s + p.reviewsCount, 0)
-        setStats({ products: list.length, reviews: reviewCount })
-      })
+      .getApproved({ sort: 'rating', limit: 60 })
+      .then((list) => setTopProducts(list.slice(0, 6)))
+      .catch(() => {})
+      .finally(() => setLoadingTop(false))
+    catalog
+      .getStats()
+      .then(setStats)
       .catch(() => {})
     return unsubCat
   }, [])
@@ -75,7 +81,7 @@ export function HomePage() {
         <h2 className="section-title">Топ оценени сега</h2>
         <p className="section-desc">Продуктите с най-висока средна оценка и най-много ревюта от реални родители.</p>
 
-        {topProducts.length === 0 ? (
+        {loadingTop ? (
           <div className="grid-cards three">
             {[1, 2, 3].map((i) => (
               <div key={i} className="product-card">
@@ -85,6 +91,18 @@ export function HomePage() {
               </div>
             ))}
           </div>
+        ) : topProducts.length === 0 ? (
+          <EmptyState
+            icon="inventory_2"
+            title="Каталогът все още е празен"
+            text="Бъди първият, който добави продукт и сподели опита си."
+            action={
+              <button className="btn btn-primary" onClick={() => navigate('/products/new')}>
+                <Msr icon="add_circle" size="sm" />
+                Добави продукт
+              </button>
+            }
+          />
         ) : (
           <div className="grid-cards three">
             {topProducts.map((p) => (
@@ -97,7 +115,9 @@ export function HomePage() {
           <div className="stat-card">
             <Msr icon="inventory_2" size="lg" />
             <div className="stat-num">{stats.products.toLocaleString('bg-BG')}</div>
-            <div className="stat-label">Одобрени продукта</div>
+            <div className="stat-label">
+              Одобрени {plural(stats.products, 'продукт', 'продукта')}
+            </div>
           </div>
           <div className="stat-card">
             <Msr icon="rate_review" size="lg" />

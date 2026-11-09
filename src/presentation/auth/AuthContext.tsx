@@ -8,6 +8,7 @@ interface AuthContextValue {
   user: AppUser | null
   loading: boolean
   error: string | null
+  clearError: () => void
   loginWithGoogle: () => Promise<void>
   loginWithEmail: (email: string, password: string) => Promise<void>
   registerWithEmail: (email: string, password: string, displayName: string) => Promise<void>
@@ -34,6 +35,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const unsub = auth.onAuthStateChanged((s) => setSession(s))
     return unsub
+  }, [auth])
+
+  useEffect(() => {
+    // Довършва Google redirect входа (мобилни браузъри).
+    auth.completeRedirectSignIn().catch(() => {})
   }, [auth])
 
   useEffect(() => {
@@ -69,6 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         loading,
         error,
+        clearError: () => setError(null),
         loginWithGoogle: () => run(() => auth.signInWithGoogle()),
         loginWithEmail: (email, password) => run(() => auth.signInWithEmail(email, password)),
         registerWithEmail: (email, password, displayName) =>

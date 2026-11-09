@@ -58,7 +58,7 @@ export function CategoriesTab() {
     try {
       await getServices().moderation.setCategoryStatus(c.id, next, user!)
       showToast(
-        next === 'active' ? `Категорията „${c.name}" е активна` : `Категорията „${c.name}" е архивирана`,
+        next === 'active' ? `Категорията „${c.name}“ е активна` : `Категорията „${c.name}“ е архивирана`,
         next === 'active' ? 'check_circle' : 'archive',
       )
     } catch (e) {

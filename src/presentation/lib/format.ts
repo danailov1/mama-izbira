@@ -5,8 +5,16 @@ export function formatDate(ts: number): string {
   return d.toLocaleDateString('bg-BG', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
+/** Българска плурализация: 1 ревю, 2 ревюта, 11 ревюта, 21 ревю. */
+export function plural(n: number, one: string, many: string): string {
+  const mod10 = n % 10
+  const mod100 = n % 100
+  return mod10 === 1 && mod100 !== 11 ? one : many
+}
+
 export function timeAgo(ts: number): string {
   const diff = Date.now() - ts
+  if (diff < 0) return formatDate(ts)
   if (diff < 60_000) return 'току-що'
   if (diff < 3_600_000) return `преди ${Math.floor(diff / 60_000)} мин`
   if (diff < DAY) return `преди ${Math.floor(diff / 3_600_000)} ч`

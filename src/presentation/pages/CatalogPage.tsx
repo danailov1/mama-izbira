@@ -4,12 +4,26 @@ import type { Category } from '@/core/domain/entities/category'
 import type { Product } from '@/core/domain/entities/product'
 import { getServices } from '@/infra/di'
 import { useDebounce } from '@/presentation/lib/useDebounce'
+import { usePageTitle } from '@/presentation/lib/usePageTitle'
 import { Msr } from '@/presentation/components/ui/Msr'
+import { Alert } from '@/presentation/components/ui/Alert'
 import { ProductCard } from '@/presentation/components/product/ProductCard'
 import { EmptyState } from '@/presentation/components/ui/EmptyState'
 import { useAuth } from '@/presentation/auth/AuthContext'
 
 type SortKey = 'newest' | 'top' | 'rating'
+
+const PAGE_SIZE = 24
+
+function sortProducts(list: Product[], sort: SortKey): Product[] {
+  if (sort === 'rating') {
+    return [...list].sort((a, b) => b.avgRating - a.avgRating || b.reviewsCount - a.reviewsCount)
+  }
+  if (sort === 'top') {
+    return [...list].sort((a, b) => b.reviewsCount - a.reviewsCount || b.avgRating - a.avgRating)
+  }
+  return list
+}
 
 export function CatalogPage() {
   const { user } = useAuth()
@@ -19,11 +33,16 @@ export function CatalogPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [exhausted, setExhausted] = useState(false)
+  const [reloadToken, setReloadToken] = useState(0)
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState<SortKey>('newest')
   const [minRating, setMinRating] = useState(0)
 
   const debouncedSearch = useDebounce(search)
+  usePageTitle('Каталог')
 
   useEffect(() => {
     const { catalog } = getServices()
@@ -33,24 +52,59 @@ export function CatalogPage() {
   useEffect(() => {
     let active = true
     setLoading(true)
+    setError(null)
+    setExhausted(false)
     getServices()
       .catalog.getApproved({
         categoryId: categoryParam || undefined,
         search: debouncedSearch.trim() || undefined,
         sort,
         minRating: minRating || undefined,
-        limit: 60,
+        limit: PAGE_SIZE,
       })
       .then((list) => {
         if (!active) return
-        setProducts(list)
+        setProducts(sortProducts(list, sort))
+        setExhausted(list.length === 0)
         setLoading(false)
       })
-      .catch(() => active && setLoading(false))
+      .catch((e) => {
+        if (!active) return
+        setProducts([])
+        setError(e instanceof Error ? e.message : 'Продуктите не можаха да се заредят.')
+        setLoading(false)
+      })
     return () => {
       active = false
     }
-  }, [categoryParam, debouncedSearch, sort, minRating])
+  }, [categoryParam, debouncedSearch, sort, minRating, reloadToken])
+
+  const loadMore = async () => {
+    const last = products[products.length - 1]
+    if (!last || loadingMore) return
+    setLoadingMore(true)
+    try {
+      const list = await getServices().catalog.getApproved({
+        categoryId: categoryParam || undefined,
+        search: debouncedSearch.trim() || undefined,
+        sort,
+        minRating: minRating || undefined,
+        limit: PAGE_SIZE,
+        cursorId: last.id,
+      })
+      if (list.length === 0) {
+        setExhausted(true)
+      } else {
+        setProducts((prev) =>
+          sortProducts([...prev, ...list.filter((p) => !prev.some((x) => x.id === p.id))], sort),
+        )
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Следващата страница не можа да се зареди.')
+    } finally {
+      setLoadingMore(false)
+    }
+  }
 
   const categoryMap = useMemo(() => {
     const m = new Map<string, Category>()
@@ -61,6 +115,12 @@ export function CatalogPage() {
   const setCategory = (id: string) => {
     if (id) setSearchParams({ category: id })
     else setSearchParams({})
+  }
+
+  const clearFilters = () => {
+    setSearch('')
+    setMinRating(0)
+    setCategory('')
   }
 
   const hasFilters = !!search || !!categoryParam || minRating > 0
@@ -83,7 +143,15 @@ export function CatalogPage() {
           placeholder="Търси марка или модел..."
         />
         {search && (
-          <Msr icon="close" size="sm" onClick={() => setSearch('')} style={{ cursor: 'pointer' }} />
+          <button
+            type="button"
+            className="icon-btn"
+            style={{ width: 28, height: 28, border: 'none', background: 'none' }}
+            aria-label="Изчисти търсенето"
+            onClick={() => setSearch('')}
+          >
+            <Msr icon="close" size="sm" />
+          </button>
         )}
       </div>
 
@@ -110,7 +178,7 @@ export function CatalogPage() {
             Най-нови
           </button>
           <button className={`tab ${sort === 'top' ? 'active' : ''}`} onClick={() => setSort('top')}>
-            Най-полезни
+            Най-коментирани
           </button>
           <button className={`tab ${sort === 'rating' ? 'active' : ''}`} onClick={() => setSort('rating')}>
             Топ оценени
@@ -129,6 +197,18 @@ export function CatalogPage() {
         ))}
       </div>
 
+      {error && (
+        <div style={{ marginTop: 20 }}>
+          <Alert kind="error" title="Грешка при зареждане">
+            <p style={{ margin: '4px 0 10px' }}>{error}</p>
+            <button className="btn btn-secondary btn-sm" onClick={() => setReloadToken((n) => n + 1)}>
+              <Msr icon="refresh" size="sm" />
+              Опитай отново
+            </button>
+          </Alert>
+        </div>
+      )}
+
       <div style={{ marginTop: 24 }}>
         {loading ? (
           <div className="grid-cards">
@@ -141,7 +221,7 @@ export function CatalogPage() {
               </div>
             ))}
           </div>
-        ) : products.length === 0 ? (
+        ) : !error && products.length === 0 ? (
           <EmptyState
             icon="search_off"
             title={hasFilters ? 'Няма намерени продукти' : 'Каталогът все още е празен'}
@@ -157,10 +237,10 @@ export function CatalogPage() {
                   Влез, за да добавиш продукт
                 </Link>
               ) : hasFilters ? (
-                <Link to="/catalog" className="btn btn-ghost">
+                <button className="btn btn-ghost" onClick={clearFilters}>
                   <Msr icon="close" size="sm" />
                   Изчисти филтрите
-                </Link>
+                </button>
               ) : (
                 <Link to="/products/new" className="btn btn-primary">
                   <Msr icon="add_circle" size="sm" />
@@ -169,13 +249,23 @@ export function CatalogPage() {
               )
             }
           />
-        ) : (
-          <div className="grid-cards">
-            {products.map((p) => (
-              <ProductCard key={p.id} product={p} category={categoryMap.get(p.categoryId)} />
-            ))}
-          </div>
-        )}
+        ) : products.length > 0 ? (
+          <>
+            <div className="grid-cards">
+              {products.map((p) => (
+                <ProductCard key={p.id} product={p} category={categoryMap.get(p.categoryId)} />
+              ))}
+            </div>
+            {!exhausted && (
+              <div className="center" style={{ marginTop: 24 }}>
+                <button className="btn btn-secondary" onClick={loadMore} disabled={loadingMore}>
+                  {loadingMore ? <span className="spinner" /> : <Msr icon="expand_more" size="sm" />}
+                  Зареди още
+                </button>
+              </div>
+            )}
+          </>
+        ) : null}
       </div>
     </div>
   )

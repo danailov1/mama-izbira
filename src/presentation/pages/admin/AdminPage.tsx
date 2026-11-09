@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { getServices } from '@/infra/di'
 import { useAuth } from '@/presentation/auth/AuthContext'
 import { isModerator } from '@/core/usecases/auth-service'
+import { usePageTitle } from '@/presentation/lib/usePageTitle'
 import { Msr } from '@/presentation/components/ui/Msr'
 import { EmptyState } from '@/presentation/components/ui/EmptyState'
 import { ProductsTab } from './ProductsTab'
@@ -13,21 +14,7 @@ type Tab = 'products' | 'reports' | 'categories'
 
 export function AdminPage() {
   const { user } = useAuth()
-  const [tab, setTab] = useState<Tab>('products')
-  const [pendingCount, setPendingCount] = useState(0)
-  const [reportsCount, setReportsCount] = useState(0)
-
-  useEffect(() => {
-    const { products, moderation } = getServices()
-    const unsubProducts = products.subscribePending((list) => setPendingCount(list.length))
-    const unsubReports = moderation.subscribeReports((list) =>
-      setReportsCount(list.filter((r) => r.status === 'new').length),
-    )
-    return () => {
-      unsubProducts()
-      unsubReports()
-    }
-  }, [])
+  usePageTitle('Админ панел')
 
   if (!isModerator(user)) {
     return (
@@ -46,6 +33,26 @@ export function AdminPage() {
       </div>
     )
   }
+
+  return <AdminDashboard />
+}
+
+function AdminDashboard() {
+  const [tab, setTab] = useState<Tab>('products')
+  const [pendingCount, setPendingCount] = useState(0)
+  const [reportsCount, setReportsCount] = useState(0)
+
+  useEffect(() => {
+    const { products, moderation } = getServices()
+    const unsubProducts = products.subscribePending((list) => setPendingCount(list.length))
+    const unsubReports = moderation.subscribeReports((list) =>
+      setReportsCount(list.filter((r) => r.status === 'new').length),
+    )
+    return () => {
+      unsubProducts()
+      unsubReports()
+    }
+  }, [])
 
   return (
     <div className="page">

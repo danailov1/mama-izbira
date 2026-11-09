@@ -29,6 +29,11 @@ export class ReviewService {
     return this.reviews.getByProductAndUser(productId, userId)
   }
 
+  /** Ревю по id (doc id == userId на автора). */
+  getById(productId: string, reviewId: string): Promise<Review | null> {
+    return this.reviews.getById(productId, reviewId)
+  }
+
   subscribeMine(userId: string, cb: (reviews: Review[]) => void): () => void {
     return this.reviews.subscribeMine(userId, cb)
   }
@@ -119,7 +124,16 @@ export class VoteService {
     private readonly reviews: ReviewRepository,
   ) {}
 
-  async toggle(productId: string, reviewId: string, type: VoteType, user: AppUser): Promise<void> {
+  /**
+   * Тогъл на глас. Връща новото състояние на гласа (null = премахнат),
+   * за да може UI-ът да го отрази веднага.
+   */
+  async toggle(
+    productId: string,
+    reviewId: string,
+    type: VoteType,
+    user: AppUser,
+  ): Promise<VoteType | null> {
     if (!user) throw new DomainError('auth_required', 'Трябва да си влязъл, за да гласуваш.')
     const review = await this.reviews.getByProductAndUser(productId, reviewId)
     if (!review || review.status !== 'visible')
@@ -130,9 +144,10 @@ export class VoteService {
     const existing = await this.votes.getForReview(productId, reviewId, user.id)
     if (existing && existing.type === type) {
       await this.votes.clear(productId, reviewId, user.id)
-    } else {
-      await this.votes.cast(productId, reviewId, user.id, type)
+      return null
     }
+    await this.votes.cast(productId, reviewId, user.id, type)
+    return type
   }
 
   async getMyVote(productId: string, reviewId: string, userId: string) {

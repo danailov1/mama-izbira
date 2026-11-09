@@ -6,9 +6,11 @@ import { useAuth } from '@/presentation/auth/AuthContext'
 import { Msr } from '@/presentation/components/ui/Msr'
 import { ProductForm } from '@/presentation/components/product/ProductForm'
 import { Alert } from '@/presentation/components/ui/Alert'
+import { usePageTitle } from '@/presentation/lib/usePageTitle'
 
 export function AddProductPage() {
   const { user, loading } = useAuth()
+  usePageTitle('Добави продукт')
   const [categories, setCategories] = useState<Category[]>([])
 
   useEffect(() => {

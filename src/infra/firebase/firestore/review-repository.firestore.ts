@@ -45,12 +45,20 @@ export class FirestoreReviewRepository implements ReviewRepository {
     return doc(this.db, 'products', productId, 'reviews', userId)
   }
 
+  private votesOf(productId: string, reviewId: string) {
+    return collection(this.db, 'products', productId, 'reviews', reviewId, 'votes')
+  }
+
   private productDoc(productId: string) {
     return doc(this.db, 'products', productId)
   }
 
   async getByProductAndUser(productId: string, userId: string): Promise<Review | null> {
-    const snap = await getDoc(this.reviewDoc(productId, userId))
+    return this.getById(productId, userId)
+  }
+
+  async getById(productId: string, reviewId: string): Promise<Review | null> {
+    const snap = await getDoc(this.reviewDoc(productId, reviewId))
     if (!snap.exists()) return null
     return toReview(snap as unknown as QueryDocumentSnapshot)
   }
@@ -110,11 +118,14 @@ export class FirestoreReviewRepository implements ReviewRepository {
   }
 
   async remove(productId: string, reviewId: string): Promise<void> {
+    // Извън транзакцията: намери всички гласове, за да не останат „сираци“.
+    const voteRefs = (await getDocs(this.votesOf(productId, reviewId))).docs.map((d) => d.ref)
     await runTransaction(this.db, async (tx) => {
       const ref = this.reviewDoc(productId, reviewId)
       const snap = await tx.get(ref)
       if (!snap.exists()) return
       const rating = snap.data().rating
+      voteRefs.forEach((voteRef) => tx.delete(voteRef))
       tx.delete(ref)
       tx.update(this.productDoc(productId), {
         reviewsCount: increment(-1),

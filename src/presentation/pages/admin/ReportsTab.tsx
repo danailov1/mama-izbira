@@ -6,6 +6,7 @@ import { getServices } from '@/infra/di'
 import { useAuth } from '@/presentation/auth/AuthContext'
 import { Msr } from '@/presentation/components/ui/Msr'
 import { EmptyState } from '@/presentation/components/ui/EmptyState'
+import { ConfirmModal } from '@/presentation/components/ui/ConfirmModal'
 import { useToast } from '@/presentation/components/ui/Toast'
 import { timeAgo } from '@/presentation/lib/format'
 
@@ -21,6 +22,7 @@ export function ReportsTab() {
   const [extras, setExtras] = useState<Record<string, ReportExtra>>({})
   const [filter, setFilter] = useState<'all' | 'new'>('new')
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [confirming, setConfirming] = useState<Report | null>(null)
 
   useEffect(() => {
     return getServices().moderation.subscribeReports(setReports)
@@ -40,7 +42,7 @@ export function ReportsTab() {
         .then((p) => {
           if (!active) return
           setExtras((prev) => ({ ...prev, [r.id]: { ...prev[r.id], product: p } }))
-          return getServices().reviews.getMyReview(r.productId, r.reviewId)
+          return getServices().reviews.getById(r.productId, r.reviewId)
         })
         .then((rev) => {
           if (!active) return
@@ -71,13 +73,16 @@ export function ReportsTab() {
   }
 
   const removeReview = async (r: Report) => {
-    const extra = extras[r.id]
-    const title = extra?.product ? `${extra.product.brand} ${extra.product.model}` : 'продукта'
-    if (!window.confirm(`Премахване на докладваното ревю от ${title}? Действието е необратимо.`)) return
     setBusyId(r.id)
     try {
-      await getServices().moderation.removeReportedReview(r, user!)
-      showToast('Ревюто е премахнато, докладът е затворен', 'delete')
+      const removed = await getServices().moderation.removeReportedReview(r, user!)
+      showToast(
+        removed
+          ? 'Ревюто е премахнато, докладът е затворен'
+          : 'Ревюто вече е било премахнато — докладът е затворен',
+        removed ? 'delete' : 'info',
+      )
+      setConfirming(null)
     } catch (e) {
       showToast(e instanceof Error ? e.message : 'Грешка', 'error')
     } finally {
@@ -174,7 +179,7 @@ export function ReportsTab() {
                   <button
                     className="btn btn-danger btn-sm"
                     disabled={busyId === r.id}
-                    onClick={() => removeReview(r)}
+                    onClick={() => setConfirming(r)}
                   >
                     <Msr icon="delete" size="sm" />
                     Премахни ревюто
@@ -193,6 +198,28 @@ export function ReportsTab() {
           </div>
         )
       })}
+
+      {confirming && (
+        <ConfirmModal
+          title="Премахни докладваното ревю"
+          message={
+            <>
+              Ревюто от{' '}
+              <b>
+                {extras[confirming.id]?.product
+                  ? `${extras[confirming.id]!.product!.brand} ${extras[confirming.id]!.product!.model}`
+                  : 'този продукт'}
+              </b>{' '}
+              ще бъде скрито от всички. Действието е необратимо.
+            </>
+          }
+          confirmLabel="Премахни"
+          danger
+          busy={busyId === confirming.id}
+          onConfirm={() => removeReview(confirming)}
+          onClose={() => setConfirming(null)}
+        />
+      )}
     </div>
   )
 }

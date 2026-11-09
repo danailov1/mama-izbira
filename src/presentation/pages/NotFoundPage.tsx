@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom'
 import { EmptyState } from '@/presentation/components/ui/EmptyState'
 import { Msr } from '@/presentation/components/ui/Msr'
+import { usePageTitle } from '@/presentation/lib/usePageTitle'
 
 export function NotFoundPage() {
+  usePageTitle('Страницата не е намерена')
   return (
     <div className="page">
       <EmptyState

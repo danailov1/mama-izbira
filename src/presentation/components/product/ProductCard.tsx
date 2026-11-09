@@ -1,17 +1,24 @@
-import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import type { Category } from '@/core/domain/entities/category'
 import type { Product } from '@/core/domain/entities/product'
 import { ProductBadge } from '../ui/Badge'
 import { Msr } from '../ui/Msr'
 import { Stars } from '../ui/Stars'
+import { plural } from '@/presentation/lib/format'
 
 export function ProductCard({ product, category }: { product: Product; category?: Category | null }) {
-  const navigate = useNavigate()
+  const [imageFailed, setImageFailed] = useState(false)
+  const showImage = !!product.imageUrl && !imageFailed
   return (
-    <div className="product-card" onClick={() => navigate(`/products/${product.id}`)} role="link">
+    <Link to={`/products/${product.id}`} className="product-card">
       <div className="product-top">
         <div className="product-thumb">
-          <Msr icon={category?.icon ?? 'inventory_2'} />
+          {showImage ? (
+            <img src={product.imageUrl} alt={`${product.brand} ${product.model}`} onError={() => setImageFailed(true)} />
+          ) : (
+            <Msr icon={category?.icon ?? 'inventory_2'} />
+          )}
         </div>
         <ProductBadge status={product.status} />
       </div>
@@ -27,11 +34,13 @@ export function ProductCard({ product, category }: { product: Product; category?
         <div className="rating-line">
           <Stars rating={product.avgRating} size="sm" />
           <span className="rating-num">{product.avgRating.toFixed(1)}</span>
-          <span style={{ color: 'var(--grey)', fontSize: 12 }}>· {product.reviewsCount} ревюта</span>
+          <span style={{ color: 'var(--grey)', fontSize: 12 }}>
+            · {product.reviewsCount} {plural(product.reviewsCount, 'ревю', 'ревюта')}
+          </span>
         </div>
       ) : (
         <span style={{ color: 'var(--grey)', fontSize: 13 }}>Все още няма ревюта</span>
       )}
-    </div>
+    </Link>
   )
 }

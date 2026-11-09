@@ -13,9 +13,11 @@ import { Stars } from '@/presentation/components/ui/Stars'
 import { ProductBadge } from '@/presentation/components/ui/Badge'
 import { ReviewCard } from '@/presentation/components/review/ReviewCard'
 import { isModerator } from '@/core/usecases/auth-service'
+import { usePageTitle } from '@/presentation/lib/usePageTitle'
 
 export function ProfilePage() {
   const { user, session, loading, logout, resendVerification } = useAuth()
+  usePageTitle('Профил')
   const [myProducts, setMyProducts] = useState<Product[]>([])
   const [myReviews, setMyReviews] = useState<Review[]>([])
   const [productTitles, setProductTitles] = useState<Record<string, string>>({})

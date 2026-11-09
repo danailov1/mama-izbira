@@ -26,10 +26,20 @@ export class ModerationService {
     await this.reports.markHandled(reportId, moderator.id)
   }
 
-  async removeReportedReview(report: Report, moderator: AppUser): Promise<void> {
+  /**
+   * Премахва докладваното ревю и затваря доклада.
+   * Връща `false`, ако ревюто вече е било премахнато/липсва (докладът пак се затваря).
+   */
+  async removeReportedReview(report: Report, moderator: AppUser): Promise<boolean> {
     this.assertModerator(moderator)
+    const review = await this.reviews.getById(report.productId, report.reviewId)
+    if (!review || review.status === 'removed') {
+      await this.reports.markHandled(report.id, moderator.id)
+      return false
+    }
     await this.reviews.moderateRemove(report.productId, report.reviewId, moderator)
     await this.reports.markHandled(report.id, moderator.id)
+    return true
   }
 
   async addCategory(input: NewCategory, admin: AppUser): Promise<Category> {

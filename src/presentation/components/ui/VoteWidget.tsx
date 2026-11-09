@@ -3,6 +3,7 @@ import type { VoteType } from '@/core/domain/entities/review'
 import { getServices } from '@/infra/di'
 import { Msr } from './Msr'
 import { useAuth } from '@/presentation/auth/AuthContext'
+import { useToast } from './Toast'
 
 export function VoteWidget({
   productId,
@@ -18,6 +19,7 @@ export function VoteWidget({
   onRequireAuth: () => void
 }) {
   const { user } = useAuth()
+  const { showToast } = useToast()
   const [myVote, setMyVote] = useState<VoteType | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -44,7 +46,10 @@ export function VoteWidget({
     if (!user || busy) return
     setBusy(true)
     try {
-      await getServices().votes.toggle(productId, reviewId, type, user)
+      const next = await getServices().votes.toggle(productId, reviewId, type, user)
+      setMyVote(next)
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'Гласът не беше записан', 'error')
     } finally {
       setBusy(false)
     }

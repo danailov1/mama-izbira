@@ -82,7 +82,7 @@ service cloud.firestore {
       // създаване: логнат, задължително 'pending', нулеви агрегати
       allow create: if isSignedIn()
         && request.resource.data.keys().hasOnly([
-             'brand', 'model', 'categoryId', 'imageUrl', 'status',
+             'brand', 'model', 'searchName', 'categoryId', 'imageUrl', 'status',
              'createdBy', 'createdAt', 'ratingSum', 'reviewsCount'
            ])
         && request.resource.data.status == 'pending'
@@ -92,6 +92,7 @@ service cloud.firestore {
         && request.resource.data.reviewsCount == 0
         && request.resource.data.brand is string
         && request.resource.data.model is string
+        && request.resource.data.searchName is string
         && request.resource.data.categoryId is string;
 
       // модератор: статус/причина; всеки логнат: агрегати от ревю транзакциите
@@ -118,13 +119,21 @@ service cloud.firestore {
         allow create: if isSignedIn()
           && request.auth.uid == reviewUserId
           && request.auth.uid == request.resource.data.userId
+          && request.resource.data.keys().hasOnly([
+               'productId', 'userId', 'rating', 'text', 'upvotes',
+               'downvotes', 'netScore', 'status', 'createdAt', 'updatedAt'
+             ])
           && request.resource.data.productId == productId
           && request.resource.data.status == 'visible'
+          && request.resource.data.text is string
+          && request.resource.data.createdAt is timestamp
+          && request.resource.data.updatedAt is timestamp
           && request.resource.data.rating >= 1 && request.resource.data.rating <= 5
           && request.resource.data.rating is int
           && request.resource.data.upvotes == 0
           && request.resource.data.downvotes == 0
           && request.resource.data.netScore == 0
+          && get(/databases/$(database)/documents/products/$(productId)).data.status == 'approved'
           && !exists(/databases/$(database)/documents/products/$(productId)/reviews/$(request.auth.uid));
 
         // автор: текст/оценка; всеки логнат: глас агрегати от vote транзакциите
@@ -147,8 +156,13 @@ service cloud.firestore {
             && request.auth.uid == voterId
             && request.resource.data.keys().hasOnly(['type', 'createdAt'])
             && request.resource.data.type in ['up', 'down']
-            && request.resource.data.createdAt is timestamp;
-          allow delete: if isSignedIn() && request.auth.uid == voterId;
+            && request.resource.data.createdAt is timestamp
+            && get(/databases/$(database)/documents/products/$(productId)/reviews/$(reviewUserId)).data.status == 'visible';
+          // гласувалият, авторът на ревюто (при изтриване на ревюто) или модератор
+          allow delete: if isSignedIn()
+            && (request.auth.uid == voterId
+                || isModerator()
+                || get(/databases/$(database)/documents/products/$(productId)/reviews/$(reviewUserId)).data.userId == request.auth.uid);
         }
       }
     }

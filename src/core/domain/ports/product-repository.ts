@@ -7,6 +7,13 @@ export interface ProductQuery {
   status?: ProductStatus
   sort?: 'newest' | 'top' | 'rating'
   limit?: number
+  /** id на последния зареден документ — за cursor-based пагинация. */
+  cursorId?: string
+}
+
+export interface PublicStats {
+  products: number
+  reviews: number
 }
 
 export interface ProductRepository {
@@ -18,4 +25,6 @@ export interface ProductRepository {
   searchDuplicates(brand: string, model: string): Promise<Product[]>
   subscribeMine(userId: string, cb: (products: Product[]) => void): () => void
   subscribePending(cb: (products: Product[]) => void): () => void
+  subscribeAll(cb: (products: Product[]) => void): () => void
+  getPublicStats(): Promise<PublicStats>
 }

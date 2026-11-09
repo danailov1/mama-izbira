@@ -3,26 +3,39 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/presentation/auth/AuthContext'
 import { Msr } from '@/presentation/components/ui/Msr'
 import { Alert } from '@/presentation/components/ui/Alert'
+import { usePageTitle } from '@/presentation/lib/usePageTitle'
 
 type Mode = 'login' | 'register'
 
 export function AuthPage() {
-  const { loginWithGoogle, loginWithEmail, registerWithEmail, resetPassword, error, session, user, loading } =
-    useAuth()
+  const {
+    loginWithGoogle,
+    loginWithEmail,
+    registerWithEmail,
+    resetPassword,
+    error,
+    clearError,
+    session,
+    user,
+    loading,
+  } = useAuth()
   const navigate = useNavigate()
   const [mode, setMode] = useState<Mode>('login')
+  const [intent, setIntent] = useState<'login' | 'register' | 'reset'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
   const [busy, setBusy] = useState(false)
   const [localError, setLocalError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
+  usePageTitle(mode === 'login' ? 'Вход' : 'Регистрация')
 
   useEffect(() => {
     if (!loading && session && user) navigate('/profile', { replace: true })
   }, [loading, session, user, navigate])
 
   const submit = async () => {
+    setIntent(mode === 'login' ? 'login' : 'register')
     setLocalError(null)
     setInfo(null)
     if (!email.includes('@') || password.length < 6) {
@@ -54,8 +67,10 @@ export function AuthPage() {
   }
 
   const forgot = async () => {
+    setIntent('reset')
     setLocalError(null)
     setInfo(null)
+    clearError()
     if (!email.includes('@')) {
       setLocalError('Въведи имейла си, за да изпратим линк за нова парола.')
       return
@@ -155,7 +170,13 @@ export function AuthPage() {
 
         {(error || localError) && (
           <Alert kind="error" style={{ marginBottom: 14 }}>
-            <b>Неуспешно влизане</b>
+            <b>
+              {intent === 'register'
+                ? 'Неуспешна регистрация'
+                : intent === 'reset'
+                  ? 'Неуспешно изпращане'
+                  : 'Неуспешен вход'}
+            </b>
             {localError ?? error}
           </Alert>
         )}
@@ -170,8 +191,12 @@ export function AuthPage() {
           <button
             className="btn btn-ghost btn-sm"
             onClick={() => {
-              setMode(mode === 'login' ? 'register' : 'login')
+              const next = mode === 'login' ? 'register' : 'login'
+              setMode(next)
+              setIntent(next)
               setLocalError(null)
+              setInfo(null)
+              clearError()
             }}
           >
             {mode === 'login' ? 'Регистрирай се' : 'Влез'}

@@ -4,10 +4,9 @@ interface MsrProps {
   fill?: boolean
   className?: string
   style?: React.CSSProperties
-  onClick?: () => void
 }
 
-export function Msr({ icon, size = 'md', fill, className = '', style, onClick }: MsrProps) {
+export function Msr({ icon, size = 'md', fill, className = '', style }: MsrProps) {
   const cls = [
     'msr',
     size === 'sm' ? 'sm' : '',
@@ -19,7 +18,7 @@ export function Msr({ icon, size = 'md', fill, className = '', style, onClick }:
     .filter(Boolean)
     .join(' ')
   return (
-    <span className={cls} style={style} onClick={onClick} aria-hidden="true">
+    <span className={cls} style={style} aria-hidden="true">
       {icon}
     </span>
   )

@@ -3,6 +3,9 @@ import {
   doc,
   getDoc,
   getDocs,
+  getCountFromServer,
+  getAggregateFromServer,
+  sum,
   onSnapshot,
   query,
   where,
@@ -10,11 +13,14 @@ import {
   addDoc,
   updateDoc,
   limit,
+  startAfter,
+  type QueryConstraint,
   type QueryDocumentSnapshot,
 } from 'firebase/firestore'
 import { getDb } from '../config'
 import type { NewProduct, Product, ProductStatus } from '@/core/domain/entities/product'
-import type { ProductQuery, ProductRepository } from '@/core/domain/ports/product-repository'
+import { compactName, normalizeName, searchNameOf } from '@/core/domain/entities/product'
+import type { ProductQuery, ProductRepository, PublicStats } from '@/core/domain/ports/product-repository'
 
 const toProduct = (snap: QueryDocumentSnapshot): Product => {
   const d = snap.data()
@@ -35,25 +41,31 @@ const toProduct = (snap: QueryDocumentSnapshot): Product => {
   }
 }
 
-const norm = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ')
-
 export class FirestoreProductRepository implements ProductRepository {
   private db = getDb()
   private coll = collection(this.db, 'products')
 
   async query(queryOpts: ProductQuery = {}): Promise<Product[]> {
-    const base: Parameters<typeof query>[1][] = []
-    if (queryOpts.status) base.push(where('status', '==', queryOpts.status))
-    if (queryOpts.categoryId) base.push(where('categoryId', '==', queryOpts.categoryId))
-    base.push(orderBy('createdAt', 'desc'))
-    const q = query(this.coll, ...base, limit(queryOpts.limit ?? 200))
-    const snap = await getDocs(q)
+    const constraints: QueryConstraint[] = []
+    const search = normalizeName(queryOpts.search ?? '')
+
+    if (queryOpts.status) constraints.push(where('status', '==', queryOpts.status))
+    if (queryOpts.categoryId) constraints.push(where('categoryId', '==', queryOpts.categoryId))
+    if (search) {
+      constraints.push(where('searchName', '>=', search))
+      constraints.push(where('searchName', '<=', `${search}\uf8ff`))
+      constraints.push(orderBy('searchName', 'asc'))
+    } else {
+      constraints.push(orderBy('createdAt', 'desc'))
+    }
+    if (queryOpts.cursorId) {
+      constraints.push(startAfter(doc(this.db, 'products', queryOpts.cursorId)))
+    }
+    constraints.push(limit(queryOpts.limit ?? 60))
+
+    const snap = await getDocs(query(this.coll, ...constraints))
     let items = snap.docs.map(toProduct)
 
-    const search = queryOpts.search?.trim().toLowerCase()
-    if (search) {
-      items = items.filter((p) => `${p.brand} ${p.model}`.toLowerCase().includes(search))
-    }
     if (queryOpts.minRating) {
       items = items.filter((p) => p.avgRating >= queryOpts.minRating!)
     }
@@ -62,7 +74,7 @@ export class FirestoreProductRepository implements ProductRepository {
     } else if (queryOpts.sort === 'top') {
       items = [...items].sort((a, b) => b.reviewsCount - a.reviewsCount || b.avgRating - a.avgRating)
     }
-    return items.slice(0, queryOpts.limit ?? 200)
+    return items
   }
 
   async getById(id: string): Promise<Product | null> {
@@ -75,7 +87,12 @@ export class FirestoreProductRepository implements ProductRepository {
     return onSnapshot(
       doc(this.db, 'products', id),
       (snap) => cb(snap.exists() ? toProduct(snap as unknown as QueryDocumentSnapshot) : null),
-      (err) => console.error('[firestore] products.subscribeById', err),
+      (err) => {
+        console.error('[firestore] products.subscribeById', err)
+        // Само отказ за достъп означава „не е наличен“; другите грешки не бива
+        // да превръщат валиден продукт в „не е намерен“.
+        if ((err as { code?: string }).code === 'permission-denied') cb(null)
+      },
     )
   }
 
@@ -83,6 +100,7 @@ export class FirestoreProductRepository implements ProductRepository {
     const ref = await addDoc(this.coll, {
       brand: input.brand,
       model: input.model,
+      searchName: searchNameOf(input.brand, input.model),
       categoryId: input.categoryId,
       imageUrl: input.imageUrl ?? null,
       status: 'pending' as ProductStatus,
@@ -103,11 +121,20 @@ export class FirestoreProductRepository implements ProductRepository {
   }
 
   async searchDuplicates(brand: string, model: string): Promise<Product[]> {
-    const q = query(this.coll, where('status', '==', 'approved'), limit(500))
+    const target = compactName(`${brand} ${model}`)
+    if (!target) return []
+    const prefix = normalizeName(brand).split(' ')[0] || normalizeName(model).split(' ')[0]
+    if (!prefix) return []
+    const q = query(
+      this.coll,
+      where('status', '==', 'approved'),
+      where('searchName', '>=', prefix),
+      where('searchName', '<=', `${prefix}\uf8ff`),
+      orderBy('searchName', 'asc'),
+      limit(500),
+    )
     const snap = await getDocs(q)
-    return snap.docs
-      .map(toProduct)
-      .filter((p) => norm(p.brand) === norm(brand) && norm(p.model) === norm(model))
+    return snap.docs.map(toProduct).filter((p) => compactName(`${p.brand} ${p.model}`) === target)
   }
 
   subscribeMine(userId: string, cb: (products: Product[]) => void): () => void {
@@ -126,5 +153,26 @@ export class FirestoreProductRepository implements ProductRepository {
       (snap) => cb(snap.docs.map(toProduct)),
       (err) => console.error('[firestore] products.subscribePending', err),
     )
+  }
+
+  subscribeAll(cb: (products: Product[]) => void): () => void {
+    const q = query(this.coll, orderBy('createdAt', 'desc'), limit(500))
+    return onSnapshot(
+      q,
+      (snap) => cb(snap.docs.map(toProduct)),
+      (err) => console.error('[firestore] products.subscribeAll', err),
+    )
+  }
+
+  async getPublicStats(): Promise<PublicStats> {
+    const approved = query(this.coll, where('status', '==', 'approved'))
+    const [countSnap, aggregateSnap] = await Promise.all([
+      getCountFromServer(approved),
+      getAggregateFromServer(approved, { reviews: sum('reviewsCount') }),
+    ])
+    return {
+      products: countSnap.data().count,
+      reviews: aggregateSnap.data().reviews ?? 0,
+    }
   }
 }

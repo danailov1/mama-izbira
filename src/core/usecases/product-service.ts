@@ -1,6 +1,7 @@
 import type { NewProduct, Product } from '../domain/entities/product'
+import { compactName, normalizeName, tokenSimilarity } from '../domain/entities/product'
 import type { CategoryRepository } from '../domain/ports/category-repository'
-import type { ProductRepository } from '../domain/ports/product-repository'
+import type { ProductRepository, PublicStats } from '../domain/ports/product-repository'
 import type { AppUser } from '../domain/entities/user'
 import { DomainError, isModerator } from './auth-service'
 
@@ -23,6 +24,14 @@ export class ProductService {
     return this.products.subscribePending(cb)
   }
 
+  subscribeAll(cb: (products: Product[]) => void): () => void {
+    return this.products.subscribeAll(cb)
+  }
+
+  getPublicStats(): Promise<PublicStats> {
+    return this.products.getPublicStats()
+  }
+
   private validateCategory(categoryId: string): Promise<boolean> {
     return this.categories.byId(categoryId).then((c) => c !== null && c.status === 'active')
   }
@@ -35,6 +44,19 @@ export class ProductService {
     if (model.length < 2) throw new DomainError('invalid_model', 'Моделът трябва да е поне 2 символа.')
     if (!(await this.validateCategory(input.categoryId)))
       throw new DomainError('invalid_category', 'Избери валидна категория.')
+
+    const imageUrl = input.imageUrl?.trim()
+    if (imageUrl) {
+      let valid = false
+      try {
+        const parsed = new URL(imageUrl)
+        valid = parsed.protocol === 'http:' || parsed.protocol === 'https:'
+      } catch {
+        valid = false
+      }
+      if (!valid)
+        throw new DomainError('invalid_image', 'Линкът към снимката трябва да започва с http:// или https://.')
+    }
 
     const dupes = await this.products.searchDuplicates(brand, model)
     if (dupes.length > 0) {
@@ -50,7 +72,7 @@ export class ProductService {
         brand,
         model,
         categoryId: input.categoryId,
-        imageUrl: input.imageUrl,
+        imageUrl,
       },
       user.id,
     )
@@ -59,8 +81,22 @@ export class ProductService {
   async suggestDuplicates(brand: string, model: string): Promise<DuplicateSuggestion[]> {
     const q = `${brand} ${model}`.trim()
     if (q.length < 3) return []
-    const results = await this.products.query({ status: 'approved', search: q, limit: 5 })
-    return results.map((product) => ({ product, score: 1 }))
+    const seed = normalizeName(brand) || normalizeName(model)
+    if (!seed) return []
+    const results = await this.products.query({ status: 'approved', search: seed, limit: 50 })
+    const targetCompact = compactName(q)
+    return results
+      .map((product) => {
+        const candidate = `${product.brand} ${product.model}`
+        const score =
+          compactName(candidate) === targetCompact
+            ? 1
+            : Math.max(tokenSimilarity(candidate, q), 0)
+        return { product, score }
+      })
+      .filter((s) => s.score > 0.2)
+      .sort((a, b) => b.score - a.score || b.product.reviewsCount - a.product.reviewsCount)
+      .slice(0, 5)
   }
 
   async approve(productId: string, moderator: AppUser): Promise<void> {

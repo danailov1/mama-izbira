@@ -6,6 +6,8 @@ import type { NewReview, Report, Review } from '../entities/review'
  */
 export interface ReviewRepository {
   getByProductAndUser(productId: string, userId: string): Promise<Review | null>
+  /** Връща ревю по id (doc id == userId на автора). */
+  getById(productId: string, reviewId: string): Promise<Review | null>
   listByProduct(productId: string): Promise<Review[]>
   subscribeByProduct(productId: string, cb: (reviews: Review[]) => void): () => void
   create(review: NewReview, userId: string): Promise<Review>

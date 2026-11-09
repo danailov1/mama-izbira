@@ -27,12 +27,6 @@ export class FirestoreUserRepository implements UserRepository {
     return toUser(snap as unknown as QueryDocumentSnapshot)
   }
 
-  async getByEmail(email: string): Promise<AppUser | null> {
-    const users = await getDoc(this.ref(email.toLowerCase()))
-    if (!users.exists()) return null
-    return toUser(users as unknown as QueryDocumentSnapshot)
-  }
-
   async upsertFromAuth(uid: string, email: string | null, displayName: string | null): Promise<AppUser> {
     const ref = this.ref(uid)
     const existing = await getDoc(ref)

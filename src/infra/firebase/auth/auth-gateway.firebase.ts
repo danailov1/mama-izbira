@@ -1,12 +1,14 @@
 import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
+  getRedirectResult,
   onAuthStateChanged,
   reload,
   sendEmailVerification,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
   signOut as fbSignOut,
   updateProfile,
   type User,
@@ -14,6 +16,10 @@ import {
 import type { AuthGateway } from '@/core/domain/ports/auth-gateway'
 import type { AuthSession } from '@/core/domain/entities/user'
 import { getAuthInstance } from '../config'
+
+const isMobileBrowser = (): boolean =>
+  typeof navigator !== 'undefined' &&
+  /Android|iPhone|iPad|iPod|Mobile|Opera Mini|IEMobile/i.test(navigator.userAgent)
 
 const toSession = (user: User | null): AuthSession | null => {
   if (!user) return null
@@ -36,8 +42,23 @@ export class FirebaseAuthGateway implements AuthGateway {
 
   async signInWithGoogle(): Promise<AuthSession> {
     const provider = new GoogleAuthProvider()
+    if (isMobileBrowser()) {
+      // Попъпите са ненадеждни в мобилен Safari/вградени браузъри — използваме redirect.
+      await signInWithRedirect(this.auth, provider)
+      return new Promise<AuthSession>(() => {})
+    }
     const cred = await signInWithPopup(this.auth, provider)
     return toSession(cred.user)!
+  }
+
+  async completeRedirectSignIn(): Promise<AuthSession | null> {
+    try {
+      const cred = await getRedirectResult(this.auth)
+      return cred ? toSession(cred.user) : null
+    } catch (err) {
+      console.error('[auth] completeRedirectSignIn', err)
+      return null
+    }
   }
 
   async signInWithEmail(email: string, password: string): Promise<AuthSession> {
