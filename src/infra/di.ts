@@ -11,6 +11,7 @@ import { FirestoreProductRepository } from './firebase/firestore/product-reposit
 import { FirestoreReviewRepository } from './firebase/firestore/review-repository.firestore'
 import { FirestoreReportRepository } from './firebase/firestore/report-repository.firestore'
 import { FirestoreVoteRepository } from './firebase/firestore/vote-repository.firestore'
+import { LazyTextMatcher } from './wasm/text-matcher'
 
 import { AuthService as AuthServiceImpl } from '@/core/usecases/auth-service'
 import { CatalogService as CatalogServiceImpl } from '@/core/usecases/catalog-service'
@@ -44,7 +45,7 @@ export function getServices(): Services {
   instance = {
     auth: new AuthServiceImpl(authGateway, userRepo),
     catalog: new CatalogServiceImpl(productRepo, categoryRepo),
-    products: new ProductServiceImpl(productRepo, categoryRepo),
+    products: new ProductServiceImpl(productRepo, categoryRepo, new LazyTextMatcher()),
     moderation: new ModerationServiceImpl(reportRepo, categoryRepo, reviewService),
     reviews: reviewService,
     votes: new VoteServiceImpl(voteRepo, reviewRepo),

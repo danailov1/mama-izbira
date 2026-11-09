@@ -19,9 +19,8 @@ import {
 } from 'firebase/firestore'
 import { getDb } from '../config'
 import type { NewProduct, Product, ProductStatus } from '@/core/domain/entities/product'
-import { compactName, normalizeName, searchNameOf } from '@/core/domain/entities/product'
+import { normalizeName, searchNameOf } from '@/core/domain/entities/product'
 import type { ProductQuery, ProductRepository, PublicStats } from '@/core/domain/ports/product-repository'
-
 const toProduct = (snap: QueryDocumentSnapshot): Product => {
   const d = snap.data()
   const reviewsCount = d.reviewsCount ?? 0
@@ -118,23 +117,6 @@ export class FirestoreProductRepository implements ProductRepository {
       status,
       ...(status === 'rejected' ? { rejectionReason: rejectionReason ?? null } : {}),
     })
-  }
-
-  async searchDuplicates(brand: string, model: string): Promise<Product[]> {
-    const target = compactName(`${brand} ${model}`)
-    if (!target) return []
-    const prefix = normalizeName(brand).split(' ')[0] || normalizeName(model).split(' ')[0]
-    if (!prefix) return []
-    const q = query(
-      this.coll,
-      where('status', '==', 'approved'),
-      where('searchName', '>=', prefix),
-      where('searchName', '<=', `${prefix}\uf8ff`),
-      orderBy('searchName', 'asc'),
-      limit(500),
-    )
-    const snap = await getDocs(q)
-    return snap.docs.map(toProduct).filter((p) => compactName(`${p.brand} ${p.model}`) === target)
   }
 
   subscribeMine(userId: string, cb: (products: Product[]) => void): () => void {

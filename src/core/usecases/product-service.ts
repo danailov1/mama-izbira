@@ -1,9 +1,15 @@
 import type { NewProduct, Product } from '../domain/entities/product'
-import { compactName, normalizeName, tokenSimilarity } from '../domain/entities/product'
+import { normalizeName, productTitle } from '../domain/entities/product'
 import type { CategoryRepository } from '../domain/ports/category-repository'
 import type { ProductRepository, PublicStats } from '../domain/ports/product-repository'
+import type { TextMatcher } from '../domain/ports/text-matcher'
 import type { AppUser } from '../domain/entities/user'
 import { DomainError, isModerator } from './auth-service'
+
+const DUPLICATE_SCORE = 0.92
+const DUPLICATE_CANDIDATES = 500
+const SUGGESTION_CANDIDATES = 50
+const SUGGESTION_MIN_SCORE = 0.2
 
 export interface DuplicateSuggestion {
   product: Product
@@ -14,7 +20,22 @@ export class ProductService {
   constructor(
     private readonly products: ProductRepository,
     private readonly categories: CategoryRepository,
+    private readonly matcher: TextMatcher,
   ) {}
+
+  /**
+   * First token of the brand (or model) — used as the Firestore `searchName`
+   * prefix so fuzzy scoring only ever sees a bounded candidate set.
+   */
+  private namePrefix(brand: string, model: string): string {
+    return normalizeName(brand).split(' ')[0] || normalizeName(model).split(' ')[0]
+  }
+
+  private async candidates(brand: string, model: string, limit: number): Promise<Product[]> {
+    const prefix = this.namePrefix(brand, model)
+    if (!prefix) return []
+    return this.products.query({ status: 'approved', search: prefix, limit })
+  }
 
   subscribeMine(userId: string, cb: (products: Product[]) => void): () => void {
     return this.products.subscribeMine(userId, cb)
@@ -58,13 +79,20 @@ export class ProductService {
         throw new DomainError('invalid_image', 'Линкът към снимката трябва да започва с http:// или https://.')
     }
 
-    const dupes = await this.products.searchDuplicates(brand, model)
-    if (dupes.length > 0) {
-      const existing = dupes.find((p) => p.status === 'approved') ?? dupes[0]
-      throw new DomainError(
-        'duplicate',
-        `Продуктът "${existing.brand} ${existing.model}" вече съществува в каталога.`,
+    const query = `${brand} ${model}`
+    const candidates = await this.candidates(brand, model, DUPLICATE_CANDIDATES)
+    if (candidates.length > 0) {
+      const matches = await this.matcher.analyze(query, candidates.map(productTitle))
+      const duplicateIndex = matches.findIndex(
+        (m) => m.exact || m.compactMatch || m.score >= DUPLICATE_SCORE,
       )
+      if (duplicateIndex >= 0) {
+        const existing = candidates[duplicateIndex]
+        throw new DomainError(
+          'duplicate',
+          `Продуктът "${existing.brand} ${existing.model}" вече съществува в каталога.`,
+        )
+      }
     }
 
     return this.products.create(
@@ -79,22 +107,14 @@ export class ProductService {
   }
 
   async suggestDuplicates(brand: string, model: string): Promise<DuplicateSuggestion[]> {
-    const q = `${brand} ${model}`.trim()
-    if (q.length < 3) return []
-    const seed = normalizeName(brand) || normalizeName(model)
-    if (!seed) return []
-    const results = await this.products.query({ status: 'approved', search: seed, limit: 50 })
-    const targetCompact = compactName(q)
-    return results
-      .map((product) => {
-        const candidate = `${product.brand} ${product.model}`
-        const score =
-          compactName(candidate) === targetCompact
-            ? 1
-            : Math.max(tokenSimilarity(candidate, q), 0)
-        return { product, score }
-      })
-      .filter((s) => s.score > 0.2)
+    const query = `${brand} ${model}`.trim()
+    if (query.length < 3) return []
+    const candidates = await this.candidates(brand, model, SUGGESTION_CANDIDATES)
+    if (candidates.length === 0) return []
+    const matches = await this.matcher.analyze(query, candidates.map(productTitle))
+    return candidates
+      .map((product, i) => ({ product, score: matches[i].score }))
+      .filter((s) => s.score > SUGGESTION_MIN_SCORE)
       .sort((a, b) => b.score - a.score || b.product.reviewsCount - a.product.reviewsCount)
       .slice(0, 5)
   }

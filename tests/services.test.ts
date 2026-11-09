@@ -2,10 +2,8 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import type { Category } from '../src/core/domain/entities/category'
 import {
-  compactName,
   normalizeName,
   searchNameOf,
-  tokenSimilarity,
 } from '../src/core/domain/entities/product'
 import type { NewProduct, Product, ProductStatus } from '../src/core/domain/entities/product'
 import type { NewReview, Report, Review, Vote, VoteType } from '../src/core/domain/entities/review'
@@ -17,6 +15,9 @@ import type { VoteRepository } from '../src/core/domain/ports/vote-repository'
 import { ProductService } from '../src/core/usecases/product-service'
 import { ReviewService, VoteService } from '../src/core/usecases/review-service'
 import { DomainError } from '../src/core/usecases/auth-service'
+import { JsTextMatcher } from '../src/infra/wasm/text-matcher.fallback'
+
+const matcher = new JsTextMatcher()
 
 const user = (id: string, role: AppUser['role'] = 'user'): AppUser => ({
   id,
@@ -86,10 +87,6 @@ class FakeProductRepository implements ProductRepository {
     const p = this.products.find((x) => x.id === id)
     if (p) p.status = status
   }
-  searchDuplicates = async (brand: string, model: string) =>
-    this.products.filter(
-      (p) => p.brand.toLowerCase() === brand.toLowerCase() && p.model.toLowerCase() === model.toLowerCase(),
-    )
   subscribeMine = () => () => {}
   subscribePending = () => () => {}
   subscribeAll = () => () => {}
@@ -153,9 +150,13 @@ describe('Product name normalization', () => {
     assert.equal(searchNameOf('Chicco', 'Next 2 Me'), 'chicco next 2 me')
   })
 
-  it('treats spacing variants as the same product', () => {
-    assert.equal(compactName('Chicco Next2Me'), compactName('chicco next 2 me'))
-    assert.ok(tokenSimilarity('Chicco Next2Me', 'Chicco Next 2 Me') > 0)
+  it('treats spacing variants as the same product', async () => {
+    const [match] = await matcher.analyze('Chicco Next 2 Me', ['Chicco Next2Me'])
+    assert.equal(match.compactMatch, true)
+    assert.equal(match.score, 1)
+
+    const [fuzzy] = await matcher.analyze('Chicco Next 2 Me', ['Chicco Next2Me Magic'])
+    assert.ok(fuzzy.score >= 0.9, `expected a strong match, got ${fuzzy.score}`)
   })
 })
 
@@ -223,7 +224,7 @@ describe('VoteService', () => {
 describe('ProductService', () => {
   it('validates image URL protocol', async () => {
     const products = new FakeProductRepository()
-    const service = new ProductService(products, new FakeCategoryRepository())
+    const service = new ProductService(products, new FakeCategoryRepository(), matcher)
 
     await expectDomainError(
       () => service.addProduct({ brand: 'Chicco', model: 'Best Friend', categoryId: 'cat1', imageUrl: 'javascript:alert(1)' }, user('u1')),
@@ -239,7 +240,7 @@ describe('ProductService', () => {
   it('rejects duplicate products (case-insensitive)', async () => {
     const products = new FakeProductRepository()
     products.products = [product('p1', { brand: 'Chicco', model: 'Best Friend' })]
-    const service = new ProductService(products, new FakeCategoryRepository())
+    const service = new ProductService(products, new FakeCategoryRepository(), matcher)
 
     await expectDomainError(
       () => service.addProduct({ brand: 'chicco', model: 'best friend', categoryId: 'cat1' }, user('u1')),
@@ -248,7 +249,7 @@ describe('ProductService', () => {
   })
 
   it('requires valid category and brand/model lengths', async () => {
-    const service = new ProductService(new FakeProductRepository(), new FakeCategoryRepository())
+    const service = new ProductService(new FakeProductRepository(), new FakeCategoryRepository(), matcher)
     await expectDomainError(() => service.addProduct({ brand: 'C', model: 'Best Friend', categoryId: 'cat1' }, user('u1')), 'invalid_brand')
     await expectDomainError(() => service.addProduct({ brand: 'Chicco', model: 'Best Friend', categoryId: 'unknown' }, user('u1')), 'invalid_category')
   })
