@@ -8,13 +8,15 @@ import { useToast } from './Toast'
 export function VoteWidget({
   productId,
   reviewId,
-  netScore,
+  upvotes,
+  downvotes,
   canVote,
   onRequireAuth,
 }: {
   productId: string
   reviewId: string
-  netScore: number
+  upvotes: number
+  downvotes: number
   canVote: boolean
   onRequireAuth: () => void
 }) {
@@ -56,25 +58,34 @@ export function VoteWidget({
   }
 
   return (
-    <div className="vote" aria-label={`Резултат ${netScore} гласа`}>
+    <div className="vote" role="group" aria-label="Полезност на ревюто">
       <button
-        className={`up ${myVote === 'up' ? 'voted' : ''}`}
+        type="button"
+        className={`vote-btn up ${myVote === 'up' ? 'voted' : ''}`}
         onClick={() => handleVote('up')}
         disabled={busy}
-        aria-label="Полезно ревю"
-        title="Полезно"
+        aria-pressed={myVote === 'up'}
+        aria-label={`Харесва ми, ${upvotes} ${upvotes === 1 ? 'глас' : 'гласа'}`}
+        title="Харесва ми"
       >
-        <Msr icon="arrow_upward" size="sm" fill={myVote === 'up'} />
+        <Msr icon="thumb_up" size="sm" />
+        <span className="vote-count" aria-live="polite">
+          {upvotes}
+        </span>
       </button>
-      <span className="vote-count">{netScore}</span>
       <button
-        className={`down ${myVote === 'down' ? 'voted' : ''}`}
+        type="button"
+        className={`vote-btn down ${myVote === 'down' ? 'voted' : ''}`}
         onClick={() => handleVote('down')}
         disabled={busy}
-        aria-label="Неполезно ревю"
-        title="Неполезно"
+        aria-pressed={myVote === 'down'}
+        aria-label={`Не ми харесва, ${downvotes} ${downvotes === 1 ? 'глас' : 'гласа'}`}
+        title="Не ми харесва"
       >
-        <Msr icon="arrow_downward" size="sm" fill={myVote === 'down'} />
+        <Msr icon="thumb_down" size="sm" />
+        <span className="vote-count" aria-live="polite">
+          {downvotes}
+        </span>
       </button>
     </div>
   )
