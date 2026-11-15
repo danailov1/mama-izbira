@@ -9,6 +9,7 @@ import { EmptyState } from '@/presentation/components/ui/EmptyState'
 import { ProductsTab } from './ProductsTab'
 import { ReportsTab } from './ReportsTab'
 import { CategoriesTab } from './CategoriesTab'
+import './AdminPage.css'
 
 type Tab = 'products' | 'reports' | 'categories'
 
@@ -55,22 +56,47 @@ function AdminDashboard() {
   }, [])
 
   return (
-    <div className="page">
-      <span className="eyebrow">
-        <Msr icon="verified" size="sm" />
-        Модерация
-      </span>
-      <h1 className="page-title">Админ панел</h1>
-      <p className="page-sub">Одобрявай продукти, обработвай доклади и управлявай категориите.</p>
+    <div className="page admin-page">
+      <header className="admin-header">
+        <span className="eyebrow admin-eyebrow">
+          <Msr icon="verified" size="sm" />
+          Модерация
+        </span>
+        <h1 className="page-title admin-title">Админ панел</h1>
+        <p className="page-sub admin-sub">Одобрявай продукти, обработвай доклади и управлявай категориите.</p>
+      </header>
 
-      <div className="tabs" style={{ margin: '20px 0 24px' }}>
-        <button className={`tab ${tab === 'products' ? 'active' : ''}`} onClick={() => setTab('products')}>
-          Продукти{pendingCount > 0 ? ` (${pendingCount})` : ''}
+      <div className="tabs admin-tabs" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'products'}
+          className={`tab admin-tab ${tab === 'products' ? 'active' : ''}`}
+          onClick={() => setTab('products')}
+        >
+          <Msr icon="inventory_2" size="sm" />
+          Продукти
+          {pendingCount > 0 && <span className="admin-tab-count">{` (${pendingCount})`}</span>}
         </button>
-        <button className={`tab ${tab === 'reports' ? 'active' : ''}`} onClick={() => setTab('reports')}>
-          Доклади{reportsCount > 0 ? ` (${reportsCount})` : ''}
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'reports'}
+          className={`tab admin-tab ${tab === 'reports' ? 'active' : ''}`}
+          onClick={() => setTab('reports')}
+        >
+          <Msr icon="flag" size="sm" />
+          Доклади
+          {reportsCount > 0 && <span className="admin-tab-count">{` (${reportsCount})`}</span>}
         </button>
-        <button className={`tab ${tab === 'categories' ? 'active' : ''}`} onClick={() => setTab('categories')}>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'categories'}
+          className={`tab admin-tab ${tab === 'categories' ? 'active' : ''}`}
+          onClick={() => setTab('categories')}
+        >
+          <Msr icon="category" size="sm" />
           Категории
         </button>
       </div>

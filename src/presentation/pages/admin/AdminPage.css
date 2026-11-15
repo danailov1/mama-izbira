@@ -1,0 +1,131 @@
+/* ==========================================================================
+   Admin shell — page header hierarchy + grouped tab bar.
+   Page CSS is bundled before design-system.css, so every rule that touches a
+   design-system class is scoped under .admin-page (specificity 0,2,0 or
+   higher) and references values only through var(--token).
+   ========================================================================== */
+
+.admin-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* ----- Header: eyebrow pill, title, supporting line ---------------------- */
+
+.admin-page .admin-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-6);
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-lg);
+  background: var(--surface-raised);
+  box-shadow: var(--elevation-2);
+}
+
+.admin-page .admin-eyebrow {
+  align-self: flex-start;
+  margin: 0;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--accent-tint);
+  color: var(--accent);
+}
+
+.admin-page .admin-title {
+  margin: 0;
+}
+
+.admin-page .admin-sub {
+  margin: 0;
+  color: var(--secondary-label);
+}
+
+/* ----- Grouped tab surface ---------------------------------------------- */
+
+.admin-page .admin-tabs {
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border-radius: var(--radius-md);
+  background: var(--fill);
+}
+
+.admin-page .admin-tab {
+  flex: 1 1 0;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  color: var(--secondary-label);
+}
+
+.admin-page .admin-tab .msr {
+  color: var(--tertiary-label);
+}
+
+.admin-page .admin-tab.active {
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+  color: var(--label);
+  box-shadow: var(--elevation-1);
+}
+
+.admin-page .admin-tab.active .msr {
+  color: var(--accent);
+}
+
+.admin-page .admin-tab-count {
+  font-size: var(--type-caption-size);
+  font-weight: var(--type-caption-weight);
+  letter-spacing: var(--type-caption-tracking);
+  color: var(--secondary-label);
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-page .admin-tab.active .admin-tab-count {
+  color: var(--accent);
+}
+
+/* ----- Compact widths: icon-free segments, comfortable header ----------- */
+
+@media (max-width: 759px) {
+  .admin-page {
+    gap: var(--space-5);
+  }
+
+  .admin-page .admin-header {
+    padding: var(--space-5);
+    border-radius: var(--radius-md);
+  }
+
+  .admin-page .admin-tab {
+    gap: var(--space-1);
+    padding: var(--space-2);
+  }
+
+  .admin-page .admin-tab .msr {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .admin-page .admin-header {
+    padding: var(--space-7) var(--space-8);
+  }
+}
+
+/* ----- Coarse pointers: segments keep a comfortable target -------------- */
+
+@media (pointer: coarse) {
+  .admin-page .admin-tab {
+    min-height: 44px;
+  }
+}

@@ -6,6 +6,7 @@ import { isAdmin } from '@/core/usecases/auth-service'
 import { Msr } from '@/presentation/components/ui/Msr'
 import { Alert } from '@/presentation/components/ui/Alert'
 import { useToast } from '@/presentation/components/ui/Toast'
+import './CategoriesTab.css'
 
 const ICON_CHOICES = [
   'stroller',
@@ -67,17 +68,19 @@ export function CategoriesTab() {
   }
 
   return (
-    <div className="stack">
-      <Alert kind="info">
-        <b>Категориите са конфигурируеми</b>
-        Добавяй нови или архивирай стари — каталогът винаги чете от тази база.
-      </Alert>
+    <div className="stack categories-tab">
+      <div className="categories-info">
+        <Alert kind="info">
+          <b>Категориите са конфигурируеми</b>
+          Добавяй нови или архивирай стари — каталогът винаги чете от тази база.
+        </Alert>
+      </div>
 
       {admin && (
         <>
           {showForm ? (
-            <div className="form-card" style={{ maxWidth: 520 }}>
-              <h3 style={{ fontSize: 16 }}>Нова категория</h3>
+            <div className="form-card categories-form-card">
+              <h3 className="categories-form-title">Нова категория</h3>
               <div className="field">
                 <label>Име</label>
                 <input
@@ -89,7 +92,7 @@ export function CategoriesTab() {
               </div>
               <div className="field">
                 <label>Икона</label>
-                <div className="chip-row" style={{ flexWrap: 'wrap', overflow: 'visible' }}>
+                <div className="chip-row categories-icon-picker">
                   {ICON_CHOICES.map((i) => (
                     <button
                       key={i}
@@ -104,24 +107,29 @@ export function CategoriesTab() {
                 </div>
               </div>
               {error && (
-                <p className="form-error">
+                <p className="form-error categories-error">
                   <Msr icon="error" size="sm" />
                   {error}
                 </p>
               )}
-              <div className="row">
-                <button className="btn btn-primary" onClick={addCategory} disabled={busy || name.trim().length < 2}>
+              <div className="row categories-form-actions">
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={addCategory}
+                  disabled={busy || name.trim().length < 2}
+                >
                   {busy ? <span className="spinner" /> : <Msr icon="add" size="sm" />}
                   Добави
                 </button>
-                <button className="btn btn-ghost" onClick={() => setShowForm(false)}>
+                <button type="button" className="btn btn-ghost" onClick={() => setShowForm(false)}>
                   Отказ
                 </button>
               </div>
             </div>
           ) : (
-            <div>
-              <button className="btn btn-secondary btn-sm" onClick={() => setShowForm(true)}>
+            <div className="categories-form-cta">
+              <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowForm(true)}>
                 <Msr icon="add_circle" size="sm" />
                 Добави категория
               </button>
@@ -130,49 +138,51 @@ export function CategoriesTab() {
         </>
       )}
 
-      <div className="table-wrap">
-        <div className="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>Категория</th>
-                <th>Slug</th>
-                <th>Ред</th>
-                <th>Статус</th>
-                {admin && <th>Действия</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {categories.map((c) => (
-                <tr key={c.id}>
-                  <td>
-                    <span className="table-product">
-                      <div className="table-thumb">
-                        <Msr icon={c.icon} />
-                      </div>
-                      {c.name}
-                    </span>
-                  </td>
-                  <td className="muted">{c.slug}</td>
-                  <td>{c.order}</td>
-                  <td>
-                    <span className={`badge ${c.status === 'active' ? 'badge-approved' : 'badge-rejected'}`}>
-                      <Msr icon={c.status === 'active' ? 'check_circle' : 'archive'} size="sm" />
-                      {c.status === 'active' ? 'Активна' : 'Архивирана'}
-                    </span>
-                  </td>
-                  {admin && (
-                    <td>
-                      <button className="btn btn-ghost btn-sm" onClick={() => toggleStatus(c)}>
-                        <Msr icon={c.status === 'active' ? 'archive' : 'unarchive'} size="sm" />
-                        {c.status === 'active' ? 'Архивирай' : 'Активирай'}
-                      </button>
-                    </td>
-                  )}
+      <div className="categories-table-group">
+        <div className="table-wrap">
+          <div className="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Категория</th>
+                  <th>Slug</th>
+                  <th>Ред</th>
+                  <th>Статус</th>
+                  {admin && <th>Действия</th>}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {categories.map((c) => (
+                  <tr key={c.id}>
+                    <td>
+                      <span className="table-product">
+                        <div className="table-thumb">
+                          <Msr icon={c.icon} />
+                        </div>
+                        {c.name}
+                      </span>
+                    </td>
+                    <td className="muted">{c.slug}</td>
+                    <td>{c.order}</td>
+                    <td>
+                      <span className={`badge ${c.status === 'active' ? 'badge-approved' : 'badge-rejected'}`}>
+                        <Msr icon={c.status === 'active' ? 'check_circle' : 'archive'} size="sm" />
+                        {c.status === 'active' ? 'Активна' : 'Архивирана'}
+                      </span>
+                    </td>
+                    {admin && (
+                      <td>
+                        <button className="btn btn-ghost btn-sm" onClick={() => toggleStatus(c)}>
+                          <Msr icon={c.status === 'active' ? 'archive' : 'unarchive'} size="sm" />
+                          {c.status === 'active' ? 'Архивирай' : 'Активирай'}
+                        </button>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
