@@ -15,6 +15,7 @@ import { Alert } from '@/presentation/components/ui/Alert'
 import { EmptyState } from '@/presentation/components/ui/EmptyState'
 import { ReviewCard } from '@/presentation/components/review/ReviewCard'
 import { ReviewForm } from '@/presentation/components/review/ReviewForm'
+import { ProductThumb } from '@/presentation/components/product/ProductThumb'
 import { isModerator } from '@/core/usecases/auth-service'
 import './ProductDetailPage.css'
 
@@ -32,7 +33,6 @@ export function ProductDetailPage() {
   const [authors, setAuthors] = useState<Record<string, string>>({})
   const [creator, setCreator] = useState<AppUser | null>(null)
   const [notFound, setNotFound] = useState(false)
-  const [imageFailed, setImageFailed] = useState(false)
 
   const editing = searchParams.get('edit') === 'my'
   const myReview = user ? (reviews.find((r) => r.userId === user.id) ?? null) : null
@@ -44,7 +44,6 @@ export function ProductDetailPage() {
     let active = true
     setNotFound(false)
     setProduct(null)
-    setImageFailed(false)
     const { catalog } = getServices()
 
     catalog
@@ -177,17 +176,14 @@ export function ProductDetailPage() {
 
       <div className="product-hero detail-hero">
         <div className="detail-hero-media">
-          {product.imageUrl && !imageFailed ? (
-            <img
-              src={product.imageUrl}
-              alt={`${product.brand} ${product.model}`}
-              onError={() => setImageFailed(true)}
-            />
-          ) : (
-            <div className="detail-hero-placeholder">
-              <Msr icon={category?.icon ?? 'inventory_2'} size="xl" />
-            </div>
-          )}
+          <ProductThumb
+            imageUrl={product.imageUrl}
+            alt={`${product.brand} ${product.model}`}
+            name={`${product.brand} ${product.model}`}
+            categoryIcon={category?.icon}
+            categoryName={category?.name}
+            variant="detail"
+          />
         </div>
         <div className="product-hero-info detail-hero-info">
           <span className="product-cat">

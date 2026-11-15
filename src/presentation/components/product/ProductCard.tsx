@@ -1,25 +1,25 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Category } from '@/core/domain/entities/category'
 import type { Product } from '@/core/domain/entities/product'
 import { ProductBadge } from '../ui/Badge'
 import { Msr } from '../ui/Msr'
 import { Stars } from '../ui/Stars'
+import { ProductThumb } from './ProductThumb'
 import { plural } from '@/presentation/lib/format'
 import './ProductCard.css'
 
 export function ProductCard({ product, category }: { product: Product; category?: Category | null }) {
-  const [imageFailed, setImageFailed] = useState(false)
-  const showImage = !!product.imageUrl && !imageFailed
   return (
     <Link to={`/products/${product.id}`} className="product-card">
-      <div className="product-thumb product-card__media">
-        {showImage ? (
-          <img src={product.imageUrl} alt={`${product.brand} ${product.model}`} onError={() => setImageFailed(true)} />
-        ) : (
-          <Msr icon={category?.icon ?? 'inventory_2'} />
-        )}
-      </div>
+      <ProductThumb
+        className="product-card__media"
+        imageUrl={product.imageUrl}
+        alt={`${product.brand} ${product.model}`}
+        name={`${product.brand} ${product.model}`}
+        categoryIcon={category?.icon}
+        categoryName={category?.name}
+        variant="card"
+      />
       <div className="product-top">
         <span className="product-cat">
           <Msr icon={category?.icon ?? 'category'} />
