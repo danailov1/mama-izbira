@@ -43,19 +43,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <Ctx.Provider value={{ showToast }}>
       {children}
-      <div
-        style={{
-          position: 'fixed',
-          top: 72,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 70,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 10,
-          alignItems: 'center',
-        }}
-      >
+      <div className="toast-stack">
         {toasts.map((t) => (
           <div key={t.id} className="toast">
             <Msr icon={t.icon} />
