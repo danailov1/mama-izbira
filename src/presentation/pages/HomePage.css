@@ -1,0 +1,105 @@
+/* Home page — calm grouped inset sections.
+   Every rule that can collide with the design system is scoped under
+   .home-page: page CSS is bundled before design-system.css, so overrides need
+   at least two class selectors instead of relying on cascade order. */
+
+.home-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.home-page .home-page__hero {
+  padding: var(--space-4) 0 var(--space-2);
+  text-align: center;
+}
+
+.home-page .home-page__hero-actions {
+  justify-content: center;
+  margin-top: var(--space-6);
+}
+
+.home-page .home-page__section {
+  padding: var(--space-5);
+  background: var(--surface-raised);
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-1);
+}
+
+.home-page .home-page__section .chip-row {
+  margin: 0;
+  padding: var(--space-1) 0;
+}
+
+/* The eyebrow is uppercase, which breaks the icon-font ligature: keep the
+   symbol span out of the text transform so a glyph renders instead of the
+   icon name. */
+.home-page .eyebrow .msr {
+  text-transform: none;
+}
+
+.home-page .home-page__section .empty-state {
+  background: var(--surface);
+}
+
+.home-page .home-page__section .stat-card {
+  padding: var(--space-2);
+}
+
+.home-page .home-page__section .stat-num {
+  overflow-wrap: anywhere;
+}
+
+.home-page .home-page__cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  background: var(--surface-raised);
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-1);
+  text-align: center;
+}
+
+.home-page .home-page__accent {
+  margin: 0;
+}
+
+.home-page .home-page__skeleton {
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.home-page .home-page__skeleton-thumb {
+  width: var(--space-12);
+  height: var(--space-12);
+  border-radius: var(--radius-sm);
+}
+
+.home-page .home-page__skeleton-line {
+  width: 100%;
+  height: var(--space-2);
+}
+
+.home-page .home-page__skeleton-line--short {
+  width: var(--space-12);
+}
+
+@media (min-width: 640px) {
+  .home-page .home-page__section .stat-card {
+    padding: var(--space-4);
+  }
+}
+
+@media (min-width: 860px) {
+  .home-page .home-page__hero {
+    padding-top: var(--space-8);
+  }
+
+  .home-page .home-page__section {
+    padding: var(--space-6);
+  }
+}

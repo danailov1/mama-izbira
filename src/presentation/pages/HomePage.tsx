@@ -8,6 +8,7 @@ import { EmptyState } from '@/presentation/components/ui/EmptyState'
 import { ProductCard } from '@/presentation/components/product/ProductCard'
 import { plural } from '@/presentation/lib/format'
 import { usePageTitle } from '@/presentation/lib/usePageTitle'
+import './HomePage.css'
 
 export function HomePage() {
   const navigate = useNavigate()
@@ -33,8 +34,8 @@ export function HomePage() {
   }, [])
 
   return (
-    <>
-      <div className="hero">
+    <div className="page home-page">
+      <section className="home-page__hero">
         <div className="hero-stars">
           {[1, 2, 3, 4, 5].map((i) => (
             <Msr key={i} icon="star" fill />
@@ -44,7 +45,7 @@ export function HomePage() {
         <p className="hero-byline">
           <b>Ивелина Т.</b> · майка на 2 · Столче за хранене Peg Pérego
         </p>
-        <div className="row" style={{ justifyContent: 'center', marginTop: 24 }}>
+        <div className="row home-page__hero-actions">
           <button className="btn btn-primary" onClick={() => navigate('/catalog')}>
             <Msr icon="search" size="sm" />
             Разгледай каталога
@@ -54,14 +55,14 @@ export function HomePage() {
             Добави продукт
           </button>
         </div>
-      </div>
+      </section>
 
-      <div className="page" style={{ paddingTop: 0 }}>
+      <section className="home-page__section">
         <span className="eyebrow">
           <Msr icon="category" size="sm" />
           Категории
         </span>
-        <div className="chip-row" style={{ marginBottom: 28 }}>
+        <div className="chip-row">
           <Link to="/catalog" className="chip">
             <Msr icon="apps" size="sm" />
             Всички
@@ -73,7 +74,9 @@ export function HomePage() {
             </Link>
           ))}
         </div>
+      </section>
 
+      <section className="home-page__section">
         <span className="eyebrow">
           <Msr icon="verified" size="sm" />
           Одобрено от общността
@@ -84,10 +87,10 @@ export function HomePage() {
         {loadingTop ? (
           <div className="grid-cards three">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="product-card">
-                <div className="skeleton" style={{ width: 52, height: 52, borderRadius: 10 }} />
-                <div className="skeleton" style={{ width: '70%', height: 14 }} />
-                <div className="skeleton" style={{ width: '40%', height: 12 }} />
+              <div key={i} className="product-card home-page__skeleton">
+                <div className="skeleton home-page__skeleton-thumb" />
+                <div className="skeleton home-page__skeleton-line" />
+                <div className="skeleton home-page__skeleton-line home-page__skeleton-line--short" />
               </div>
             ))}
           </div>
@@ -97,7 +100,7 @@ export function HomePage() {
             title="Каталогът все още е празен"
             text="Бъди първият, който добави продукт и сподели опита си."
             action={
-              <button className="btn btn-primary" onClick={() => navigate('/products/new')}>
+              <button className="btn btn-secondary" onClick={() => navigate('/products/new')}>
                 <Msr icon="add_circle" size="sm" />
                 Добави продукт
               </button>
@@ -110,8 +113,10 @@ export function HomePage() {
             ))}
           </div>
         )}
+      </section>
 
-        <div className="stats-strip" style={{ marginTop: 36 }}>
+      <section className="home-page__section">
+        <div className="stats-strip">
           <div className="stat-card">
             <Msr icon="inventory_2" size="lg" />
             <div className="stat-num">{stats.products.toLocaleString('bg-BG')}</div>
@@ -135,17 +140,15 @@ export function HomePage() {
             <div className="stat-label">Родители като теб</div>
           </div>
         </div>
+      </section>
 
-        <div className="center" style={{ marginTop: 40 }}>
-          <p className="hand-accent" style={{ margin: 0 }}>
-            споделено от реални мами
-          </p>
-          <button className="btn btn-primary" style={{ marginTop: 8 }} onClick={() => navigate('/products/new')}>
-            <Msr icon="add_circle" size="sm" />
-            Добави продукт в каталога
-          </button>
-        </div>
-      </div>
-    </>
+      <section className="home-page__cta">
+        <p className="hand-accent home-page__accent">споделено от реални мами</p>
+        <button className="btn btn-ghost" onClick={() => navigate('/products/new')}>
+          <Msr icon="add_circle" size="sm" />
+          Добави продукт в каталога
+        </button>
+      </section>
+    </div>
   )
 }
