@@ -1,0 +1,156 @@
+/* ==========================================================================
+   Product thumb — the shared photo surface for a product.
+
+   When a product has no photo (or its photo fails to load) the thumb paints a
+   designed placeholder instead of a bare grey box:
+   • a soft layered material built from three design-system tones, the set
+     chosen by a deterministic hash of the product name (p0–p5), so every
+     product is stable and neighbours stay calm but distinguishable;
+   • a centred category glyph inside a translucent material chip, so the media
+     reads like an Apple app placeholder rather than a missing image.
+
+   Rules only reference var(--token) values; the generated material is drawn by
+   a pseudo-element so it never fights the design system over `.product-thumb`'s
+   own background (component CSS is bundled before design-system.css).
+   ========================================================================== */
+
+/* ----- Generated material: geometry + neutral default palette -------------- */
+
+.product-thumb.product-thumb--generated {
+  position: relative;
+  isolation: isolate;
+  --thumb-angle: 150deg;
+  --thumb-glow-x: 22%;
+  --thumb-glow-y: 12%;
+  --thumb-base-1: var(--surface-raised);
+  --thumb-base-2: var(--fill-secondary);
+  --thumb-glow: var(--accent-tint);
+}
+
+.product-thumb--generated::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(115% 100% at var(--thumb-glow-x) var(--thumb-glow-y), var(--thumb-glow), transparent 62%),
+    linear-gradient(var(--thumb-angle), var(--thumb-base-1), var(--thumb-base-2));
+  box-shadow:
+    inset 0 1px 0 var(--material-edge),
+    inset 0 0 0 1px var(--separator-translucent);
+}
+
+/* The detail media box already owns a border and radius: keep its material
+   quiet instead of stacking a second hard edge inside it. */
+.product-thumb.product-thumb--detail::before {
+  box-shadow: inset 0 1px 0 var(--material-edge);
+}
+
+/* ----- Palettes: hash(name) chooses one; all six stay in-palette ----------- */
+
+/* p0 — petal: berry wash, deeper in one corner. */
+.product-thumb--p0 {
+  --thumb-angle: 150deg;
+  --thumb-glow-x: 18%;
+  --thumb-glow-y: 8%;
+  --thumb-base-1: var(--accent-tint);
+  --thumb-base-2: var(--surface-raised);
+  --thumb-glow: var(--accent-tint-strong);
+}
+
+/* p1 — silver: cool neutral with a faint berry corner. */
+.product-thumb--p1 {
+  --thumb-angle: 205deg;
+  --thumb-glow-x: 86%;
+  --thumb-glow-y: 90%;
+  --thumb-base-1: var(--fill-secondary);
+  --thumb-base-2: var(--surface-raised);
+  --thumb-glow: var(--accent-tint);
+}
+
+/* p2 — fog: neutral surface fading into a soft pink. */
+.product-thumb--p2 {
+  --thumb-angle: 165deg;
+  --thumb-glow-x: 10%;
+  --thumb-glow-y: 86%;
+  --thumb-base-1: var(--surface);
+  --thumb-base-2: var(--accent-tint);
+  --thumb-glow: var(--accent-tint-strong);
+}
+
+/* p3 — linen: dusty rose easing into white, light grey corner. */
+.product-thumb--p3 {
+  --thumb-angle: 135deg;
+  --thumb-glow-x: 80%;
+  --thumb-glow-y: 16%;
+  --thumb-base-1: var(--accent-tint-strong);
+  --thumb-base-2: var(--surface-raised);
+  --thumb-glow: var(--fill);
+}
+
+/* p4 — dune: warm neutral over white, berry settling low. */
+.product-thumb--p4 {
+  --thumb-angle: 120deg;
+  --thumb-glow-x: 24%;
+  --thumb-glow-y: 90%;
+  --thumb-base-1: var(--surface-raised);
+  --thumb-base-2: var(--fill);
+  --thumb-glow: var(--accent-tint);
+}
+
+/* p5 — mist: pale berry cooling into neutral. */
+.product-thumb--p5 {
+  --thumb-angle: 195deg;
+  --thumb-glow-x: 84%;
+  --thumb-glow-y: 10%;
+  --thumb-base-1: var(--accent-tint);
+  --thumb-base-2: var(--fill-secondary);
+  --thumb-glow: var(--accent-tint-strong);
+}
+
+/* ----- Translucent material chip with the category glyph ------------------ */
+
+.product-thumb__chip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(var(--space-14), 24%, calc(var(--space-16) + var(--space-2)));
+  aspect-ratio: 1;
+  border: 1px solid var(--material-edge);
+  border-radius: var(--radius-circle);
+  background: var(--material-sheet);
+  box-shadow:
+    var(--elevation-1),
+    inset 0 0 0 1px var(--separator-translucent);
+  color: var(--accent);
+  pointer-events: none;
+}
+
+/* The detail media box is much larger, so the chip grows with it and reads as
+   a slightly thicker material (a bigger surface carries more depth). */
+.product-thumb--detail .product-thumb__chip {
+  width: clamp(var(--space-16), 24%, calc(var(--space-16) + var(--space-12)));
+  box-shadow:
+    var(--elevation-2),
+    inset 0 0 0 1px var(--separator-translucent);
+}
+
+/* Compact profile thumbnail: fill the tiny 56px square with a calm chip. */
+.product-thumb--compact .product-thumb__chip {
+  width: var(--space-12);
+}
+
+/* ----- Detail media: fill the existing aspect-ratio box exactly ----------- */
+
+.product-thumb.product-thumb--detail {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+
+/* The wrapping detail media box clips its own rounded corners, so the photo
+   must not round itself again (that would expose the fill behind it). */
+.product-thumb.product-thumb--detail img {
+  border-radius: 0;
+}

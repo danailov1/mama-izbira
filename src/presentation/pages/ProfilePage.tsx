@@ -10,6 +10,7 @@ import { Msr } from '@/presentation/components/ui/Msr'
 import { Alert } from '@/presentation/components/ui/Alert'
 import { EmptyState } from '@/presentation/components/ui/EmptyState'
 import { ProductBadge } from '@/presentation/components/ui/Badge'
+import { ProductThumb } from '@/presentation/components/product/ProductThumb'
 import { ReviewCard } from '@/presentation/components/review/ReviewCard'
 import { isModerator } from '@/core/usecases/auth-service'
 import { usePageTitle } from '@/presentation/lib/usePageTitle'
@@ -183,30 +184,38 @@ export function ProfilePage() {
           />
         ) : (
           <div className="grid-cards profile-products">
-            {myProducts.map((p) => (
-              <div key={p.id} className="product-card profile-product-card">
-                <div className="product-top">
-                  <div className="product-thumb">
-                    <Msr icon={categories.find((c) => c.id === p.categoryId)?.icon ?? 'inventory_2'} />
+            {myProducts.map((p) => {
+              const category = categories.find((c) => c.id === p.categoryId)
+              return (
+                <div key={p.id} className="product-card profile-product-card">
+                  <div className="product-top">
+                    <ProductThumb
+                      imageUrl={p.imageUrl}
+                      alt={`${p.brand} ${p.model}`}
+                      name={`${p.brand} ${p.model}`}
+                      categoryIcon={category?.icon}
+                      categoryName={category?.name}
+                      variant="compact"
+                    />
+                    <ProductBadge status={p.status} />
                   </div>
-                  <ProductBadge status={p.status} />
+                  <div className="profile-product-card__meta">
+                    <span className="product-cat">
+                      <Msr icon="category" />
+                      {category?.name ?? 'Категория'}
+                    </span>
+                    <h3 className="product-name">
+                      <Link className="profile-product-card__link" to={`/products/${p.id}`}>
+                        {p.brand} {p.model}
+                      </Link>
+                    </h3>
+                  </div>
+                  {p.status === 'rejected' && p.rejectionReason && (
+                    <p className="muted profile-product-card__reason">Причина: {p.rejectionReason}</p>
+                  )}
                 </div>
-                <div className="profile-product-card__meta">
-                  <span className="product-cat">
-                    <Msr icon="category" />
-                    {categories.find((c) => c.id === p.categoryId)?.name ?? 'Категория'}
-                  </span>
-                  <h3 className="product-name">
-                    <Link className="profile-product-card__link" to={`/products/${p.id}`}>
-                      {p.brand} {p.model}
-                    </Link>
-                  </h3>
-                </div>
-                {p.status === 'rejected' && p.rejectionReason && (
-                  <p className="muted profile-product-card__reason">Причина: {p.rejectionReason}</p>
-                )}
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </section>
