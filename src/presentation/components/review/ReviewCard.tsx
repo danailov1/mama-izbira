@@ -11,6 +11,7 @@ import { Modal } from '../ui/Modal'
 import { ConfirmModal } from '../ui/ConfirmModal'
 import { Msr } from '../ui/Msr'
 import { useToast } from '../ui/Toast'
+import './ReviewCard.css'
 
 export function ReviewCard({
   review,
@@ -96,63 +97,64 @@ export function ReviewCard({
   }
 
   return (
-    <div className="review-card">
-      <div className="avatar">{authorName ? initials(authorName) : 'Р'}</div>
-      <div style={{ flex: 1 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
-          <div>
-            <span className="review-name">
+    <article className="review-card review-card--grouped">
+      <header className="review-card__head">
+        <div className="review-card__identity">
+          <div className="avatar review-card__avatar">{authorName ? initials(authorName) : 'Р'}</div>
+          <div className="review-card__who">
+            <span className="review-name review-card__name">
               {showProductLink ? (
-                <Link to={`/products/${review.productId}`}>продукт →</Link>
+                <Link to={`/products/${review.productId}`} className="review-card__product">
+                  продукт →
+                </Link>
               ) : (
-                authorName ?? 'Родител'
+                (authorName ?? 'Родител')
               )}
             </span>
-            <div className="review-meta">{timeAgo(review.createdAt)}</div>
+            <div className="review-meta review-card__time">{timeAgo(review.createdAt)}</div>
           </div>
-          <Stars rating={review.rating} size="sm" />
         </div>
-        <p className="review-text">{review.text}</p>
-        <div className="review-foot">
-          <VoteWidget
-            productId={review.productId}
-            reviewId={review.id}
-            netScore={review.netScore}
-            canVote={canVote}
-            onRequireAuth={requireAuth}
-          />
-          <div className="review-actions">
-            {!myReview && (
-              <button className="btn btn-ghost btn-sm" onClick={openReport}>
-                <Msr icon="flag" size="sm" />
-                Докладвай
-              </button>
-            )}
-            {myReview && (
-              <>
-                <button className="btn btn-ghost btn-sm" onClick={() => navigate(`/products/${review.productId}?edit=my`)}>
-                  <Msr icon="edit" size="sm" />
-                  Редактирай
-                </button>
-                <button className="btn btn-danger btn-sm" onClick={() => setConfirming('delete')}>
-                  <Msr icon="delete" size="sm" />
-                  Изтрий
-                </button>
-              </>
-            )}
-            {!myReview && isModerator(user) && (
+        <Stars rating={review.rating} size="sm" />
+      </header>
+      <p className="review-text review-card__text">{review.text}</p>
+      <footer className="review-foot review-card__foot">
+        <VoteWidget
+          productId={review.productId}
+          reviewId={review.id}
+          netScore={review.netScore}
+          canVote={canVote}
+          onRequireAuth={requireAuth}
+        />
+        <div className="review-actions review-card__actions">
+          {!myReview && (
+            <button className="btn btn-ghost btn-sm" onClick={openReport}>
+              <Msr icon="flag" size="sm" />
+              Докладвай
+            </button>
+          )}
+          {myReview && (
+            <>
               <button
-                className="btn btn-danger btn-sm"
-                disabled={removing}
-                onClick={() => setConfirming('remove')}
+                className="btn btn-ghost btn-sm"
+                onClick={() => navigate(`/products/${review.productId}?edit=my`)}
               >
-                <Msr icon="remove_circle" size="sm" />
-                Премахни
+                <Msr icon="edit" size="sm" />
+                Редактирай
               </button>
-            )}
-          </div>
+              <button className="btn btn-danger btn-sm" onClick={() => setConfirming('delete')}>
+                <Msr icon="delete" size="sm" />
+                Изтрий
+              </button>
+            </>
+          )}
+          {!myReview && isModerator(user) && (
+            <button className="btn btn-danger btn-sm" disabled={removing} onClick={() => setConfirming('remove')}>
+              <Msr icon="remove_circle" size="sm" />
+              Премахни
+            </button>
+          )}
         </div>
-      </div>
+      </footer>
 
       {reporting && (
         <Modal title="Докладвай ревю" onClose={() => setReporting(false)}>
@@ -201,6 +203,6 @@ export function ReviewCard({
           onClose={() => setConfirming(null)}
         />
       )}
-    </div>
+    </article>
   )
 }

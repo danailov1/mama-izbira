@@ -1,0 +1,131 @@
+/* ==========================================================================
+   Review card — an inset grouped card: identity row, rating, body copy and a
+   divided action footer. Vote/actions behaviour is untouched; this file only
+   restyles the surface and the type hierarchy.
+
+   Component CSS is bundled before design-system.css, so the root override uses
+   .review-card.review-card--grouped (specificity 0,2,0) rather than relying on
+   cascade order, and every value comes from var(--token).
+   ========================================================================== */
+
+.review-card.review-card--grouped {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  padding: var(--space-5);
+  background: var(--surface-raised);
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-1);
+}
+
+/* ----- Header: identity on the leading edge, rating on the trailing ------- */
+
+.review-card--grouped .review-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.review-card--grouped .review-card__identity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.review-card--grouped .review-card__avatar {
+  width: var(--space-10);
+  height: var(--space-10);
+  font-size: var(--type-callout-size);
+}
+
+.review-card--grouped .review-card__who {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.review-card--grouped .review-card__name {
+  color: var(--label);
+  font-size: var(--type-callout-size);
+  font-weight: 600;
+  line-height: var(--type-callout-leading);
+  letter-spacing: var(--type-callout-tracking);
+  overflow-wrap: anywhere;
+}
+
+.review-card--grouped .review-card__product {
+  color: var(--accent);
+  font-weight: 600;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.review-card--grouped .review-card__product:hover {
+  opacity: 0.8;
+}
+
+.review-card--grouped .review-card__product:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.review-card--grouped .review-card__time {
+  color: var(--tertiary-label);
+  font-size: var(--type-caption-size);
+  line-height: var(--type-caption-leading);
+  letter-spacing: var(--type-caption-tracking);
+}
+
+/* Keeps the rating in the trailing corner even when it wraps below a long name. */
+.review-card--grouped .review-card__head .stars-row {
+  flex: 0 0 auto;
+  margin-top: var(--space-1);
+  margin-left: auto;
+}
+
+/* ----- Body copy: the review text is the reading content ----------------- */
+
+.review-card--grouped .review-card__text {
+  margin: var(--space-4) 0 0;
+  color: var(--label);
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-leading);
+  letter-spacing: var(--type-body-tracking);
+}
+
+/* ----- Footer: quiet divider, vote on the leading edge, actions trailing - */
+
+.review-card--grouped .review-card__foot {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--separator-translucent);
+}
+
+.review-card--grouped .review-card__actions {
+  flex-wrap: wrap;
+}
+
+/* ----- Compact widths ---------------------------------------------------- */
+
+@media (max-width: 479px) {
+  .review-card.review-card--grouped {
+    padding: var(--space-4);
+  }
+
+  .review-card--grouped .review-card__foot {
+    align-items: flex-start;
+  }
+}
+
+/* ----- Reduced motion: keep opacity feedback only ------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  .review-card--grouped .review-card__product {
+    transition: none;
+  }
+}
