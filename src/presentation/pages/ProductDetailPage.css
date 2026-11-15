@@ -1,0 +1,255 @@
+/* ==========================================================================
+   Product detail — Apple-grade page layout.
+   Every colour, shadow, radius, spacing and motion value comes from a
+   design-system token. Only hairline 1px borders, 44px touch targets,
+   ratios and flex/grid primitives are literals.
+   Selectors are scoped under .detail-page (>= 0,2,0) because page CSS is
+   bundled before design-system.css and must win over its base rules.
+   ========================================================================== */
+
+.detail-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* ----- Breadcrumbs ------------------------------------------------------- */
+
+.detail-page .detail-breadcrumbs {
+  flex-wrap: wrap;
+  row-gap: var(--space-1);
+  margin-bottom: 0;
+}
+
+.detail-page .detail-breadcrumbs .current {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* ----- Product hero ------------------------------------------------------ */
+
+.detail-page .detail-hero {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.detail-page .detail-hero-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-xl);
+  background: var(--fill-secondary);
+  box-shadow: var(--elevation-2);
+}
+
+.detail-page .detail-hero-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.detail-page .detail-hero-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--tertiary-label);
+  background: var(--fill-secondary);
+}
+
+.detail-page .detail-hero-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.detail-page .detail-hero-info .product-cat {
+  margin: 0;
+}
+
+.detail-page .detail-hero-title {
+  margin: 0;
+  font-size: var(--type-title-size);
+  font-weight: var(--type-title-weight);
+  letter-spacing: var(--type-title-tracking);
+  line-height: var(--type-title-leading);
+  color: var(--label);
+}
+
+.detail-page .detail-hero-meta {
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+}
+
+.detail-page .detail-hero-rating {
+  gap: var(--space-2);
+}
+
+.detail-page .detail-hero-rating-count {
+  font-size: var(--type-caption-size);
+  font-weight: var(--type-callout-weight);
+  letter-spacing: var(--type-caption-tracking);
+  line-height: var(--type-caption-leading);
+  color: var(--secondary-label);
+}
+
+.detail-page .detail-hero-byline {
+  margin: var(--space-2) 0 0;
+  font-size: var(--type-caption-size);
+  letter-spacing: var(--type-caption-tracking);
+  line-height: var(--type-caption-leading);
+  color: var(--secondary-label);
+}
+
+/* ----- Grouped status panels -------------------------------------------- */
+
+.detail-page .detail-status-group {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.detail-page .detail-status-group:empty {
+  display: none;
+}
+
+.detail-page .detail-status-panel {
+  width: 100%;
+}
+
+/* ----- Reviews ----------------------------------------------------------- */
+
+.detail-page .detail-reviews {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-page .detail-reviews-eyebrow {
+  margin-bottom: var(--space-2);
+}
+
+.detail-page .detail-reviews-title {
+  margin: 0 0 var(--space-5);
+}
+
+.detail-page .detail-review-editor {
+  margin-bottom: var(--space-6);
+}
+
+.detail-page .detail-review-mine {
+  gap: var(--space-3);
+}
+
+.detail-page .detail-review-edit {
+  align-self: flex-start;
+}
+
+.detail-page .detail-review-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border: 1px solid var(--separator-translucent);
+  border-radius: var(--radius-xl);
+  background: var(--fill-secondary);
+}
+
+/* ----- Moderator notice -------------------------------------------------- */
+
+.detail-page .detail-moderator {
+  margin: 0;
+}
+
+/* ----- Not-found state --------------------------------------------------- */
+
+.detail-page .detail-notfound-wrap {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-8) 0;
+}
+
+.detail-page .detail-notfound-wrap .empty-state {
+  width: 100%;
+  max-width: calc(var(--space-16) * 7);
+}
+
+/* ----- Loading skeleton -------------------------------------------------- */
+
+.detail-page .detail-skeleton {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.detail-page .detail-skeleton-media {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-xl);
+}
+
+.detail-page .detail-skeleton-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.detail-page .detail-skeleton-line {
+  width: 100%;
+  height: var(--space-4);
+  border-radius: var(--radius-sm);
+}
+
+.detail-page .detail-skeleton-line-title {
+  width: 100%;
+  max-width: calc(var(--space-16) * 6);
+  height: var(--space-8);
+}
+
+.detail-page .detail-skeleton-line-short {
+  width: 100%;
+  max-width: calc(var(--space-16) * 4);
+}
+
+/* ----- Wide layout ------------------------------------------------------- */
+
+@media (min-width: 1024px) {
+  .detail-page .detail-hero {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: var(--space-8);
+  }
+
+  .detail-page .detail-hero-media {
+    aspect-ratio: 1 / 1;
+  }
+
+  .detail-page .detail-hero-title {
+    font-size: var(--type-large-title-size);
+    letter-spacing: var(--type-large-title-tracking);
+    line-height: var(--type-large-title-leading);
+  }
+
+  .detail-page .detail-skeleton {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  }
+}
+
+/* ----- Coarse pointers: every control reaches the 44px touch target ------ */
+
+@media (pointer: coarse) {
+  .detail-page .detail-breadcrumbs a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}

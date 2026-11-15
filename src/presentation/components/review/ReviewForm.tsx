@@ -6,6 +6,7 @@ import { DomainError } from '@/core/usecases/auth-service'
 import { StarInput } from '../ui/Stars'
 import { Msr } from '../ui/Msr'
 import { useToast } from '../ui/Toast'
+import './ReviewForm.css'
 
 export function ReviewForm({
   productId,
@@ -55,8 +56,8 @@ export function ReviewForm({
   }
 
   return (
-    <div className="form-card" style={{ maxWidth: '100%' }}>
-      <h3 style={{ fontSize: 16 }}>{existing ? 'Редактирай ревюто' : 'Напиши ревю'}</h3>
+    <div className="form-card detail-review-form">
+      <h3 className="detail-review-form-title">{existing ? 'Редактирай ревюто' : 'Напиши ревю'}</h3>
       <div className="field">
         <label>Оценка</label>
         <StarInput value={rating} onChange={setRating} />
@@ -80,7 +81,7 @@ export function ReviewForm({
           {error}
         </p>
       )}
-      <div className="row">
+      <div className="row detail-review-form-actions">
         <button className="btn btn-primary" onClick={submit} disabled={busy || rating === 0}>
           {busy ? <span className="spinner" /> : <Msr icon="send" size="sm" />}
           {existing ? 'Запази промените' : 'Публикувай ревюто'}
