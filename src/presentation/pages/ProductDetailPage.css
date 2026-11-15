@@ -78,6 +78,14 @@
   margin: 0;
 }
 
+/* Keep the icon ligature intact: the design system uppercases the eyebrow,
+   category and stamp labels, which would turn the glyph name into words. */
+.detail-page .eyebrow .msr,
+.detail-page .product-cat .msr,
+.detail-page .stamp .msr {
+  text-transform: none;
+}
+
 .detail-page .detail-hero-title {
   margin: 0;
   font-size: var(--type-title-size);

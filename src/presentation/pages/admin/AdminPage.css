@@ -33,6 +33,13 @@
   color: var(--accent);
 }
 
+/* The eyebrow is uppercase, which breaks the icon-font ligature: keep the
+   symbol span out of the text transform so a glyph renders instead of the
+   icon name. */
+.admin-page .admin-eyebrow .msr {
+  text-transform: none;
+}
+
 .admin-page .admin-title {
   margin: 0;
 }

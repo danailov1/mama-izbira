@@ -10,6 +10,19 @@
   text-transform: none;
 }
 
+/* The clear control is a quiet glyph, not a filled disc flush inside the
+   search pill: keep it compact so the pill height does not jump when a query
+   is typed. The touch hit area is enlarged under (pointer: coarse). */
+.catalog-page .searchbar .icon-btn {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  margin-inline-start: var(--space-1);
+  background: transparent;
+  border: none;
+}
+
 .catalog-page .catalog-page__controls {
   display: flex;
   flex-direction: column;
@@ -97,5 +110,21 @@
 @media (min-width: 1024px) {
   .catalog-page .grid-cards {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ----- Coarse pointers: search field and clear control reach 44px --------- */
+
+@media (pointer: coarse) {
+  .catalog-page .searchbar input {
+    min-height: 44px;
+  }
+
+  .catalog-page .searchbar .icon-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    margin-inline-start: 0;
   }
 }
