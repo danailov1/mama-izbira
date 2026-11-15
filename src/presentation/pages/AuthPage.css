@@ -36,12 +36,6 @@
   margin-bottom: 0;
 }
 
-/* Keep the icon ligature intact: the eyebrow's uppercase transform would
-   otherwise turn "login" into rendered text instead of the glyph. */
-.auth-page .auth-eyebrow .msr {
-  text-transform: none;
-}
-
 .auth-page .auth-title {
   margin: 0;
   font-size: var(--type-title-size);

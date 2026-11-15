@@ -32,13 +32,6 @@
   padding: var(--space-1) 0;
 }
 
-/* The eyebrow is uppercase, which breaks the icon-font ligature: keep the
-   symbol span out of the text transform so a glyph renders instead of the
-   icon name. */
-.home-page .eyebrow .msr {
-  text-transform: none;
-}
-
 .home-page .home-page__section .empty-state {
   background: var(--surface);
 }

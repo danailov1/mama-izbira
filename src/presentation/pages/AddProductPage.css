@@ -40,12 +40,6 @@
   margin-bottom: 0;
 }
 
-/* Keep the icon ligature intact: the eyebrow's uppercase transform would
-   otherwise turn "add_circle" into rendered text instead of the glyph. */
-.add-product-page .add-product-head .eyebrow .msr {
-  text-transform: none;
-}
-
 .add-product-page .add-product-head .page-title {
   margin: 0;
 }

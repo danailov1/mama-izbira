@@ -144,12 +144,6 @@
   margin: 0;
 }
 
-/* The eyebrow is uppercase, which breaks the icon-font ligature: keep the
-   symbol span out of the text transform so a glyph renders, not a ligature name. */
-.profile-page .eyebrow .msr {
-  text-transform: none;
-}
-
 /* ----- My reviews -------------------------------------------------------- */
 
 .profile-page .profile-review-list {
