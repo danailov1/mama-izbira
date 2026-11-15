@@ -1,0 +1,191 @@
+/* Auth — a single centred grouped card surface with one primary action.
+   Scoped under .auth-page so overrides win over the shared design system,
+   whose stylesheet is bundled after this file. */
+
+.auth-page .auth-wrap {
+  width: 100%;
+  max-width: 100%;
+  margin: var(--space-4) auto var(--space-12);
+}
+
+.auth-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: var(--surface-raised);
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--elevation-3);
+}
+
+.auth-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  text-align: center;
+}
+
+.auth-page .auth-head .auth-stars {
+  margin-bottom: 0;
+}
+
+.auth-page .auth-eyebrow {
+  justify-content: center;
+  margin-bottom: 0;
+}
+
+/* Keep the icon ligature intact: the eyebrow's uppercase transform would
+   otherwise turn "login" into rendered text instead of the glyph. */
+.auth-page .auth-eyebrow .msr {
+  text-transform: none;
+}
+
+.auth-page .auth-title {
+  margin: 0;
+  font-size: var(--type-title-size);
+  letter-spacing: var(--type-title-tracking);
+  line-height: var(--type-title-leading);
+  text-align: center;
+}
+
+.auth-page .auth-sub {
+  margin: 0;
+  max-width: 100%;
+}
+
+/* Google is a secondary, outlined action next to the single berry submit. */
+.auth-page .auth-google {
+  width: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--surface-raised);
+  border: 1px solid var(--separator);
+  color: var(--label);
+  box-shadow: var(--elevation-1);
+}
+
+.auth-page .auth-google:hover {
+  border-color: var(--accent);
+  color: var(--label);
+  opacity: 1;
+}
+
+.auth-page .divider {
+  margin: var(--space-4) 0;
+}
+
+.auth-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.auth-page .field {
+  margin-bottom: 0;
+}
+
+.auth-page .field label {
+  font-size: var(--type-caption-size);
+  font-weight: var(--type-caption-weight);
+  letter-spacing: var(--type-caption-tracking);
+  line-height: var(--type-caption-leading);
+  color: var(--secondary-label);
+}
+
+.auth-page .field input {
+  background: var(--fill-secondary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: var(--type-body-size);
+}
+
+.auth-page .field input:focus {
+  border-color: var(--accent);
+}
+
+.auth-page .field .field-input-wrap .msr {
+  color: var(--secondary-label);
+}
+
+/* Forgot password and the login/register switch read as quiet text actions. */
+.auth-page .auth-forgot {
+  margin: 0;
+  font-size: var(--type-caption-size);
+  letter-spacing: var(--type-caption-tracking);
+}
+
+.auth-page .auth-mode {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  font-size: var(--type-caption-size);
+  letter-spacing: var(--type-caption-tracking);
+}
+
+.auth-page .auth-link {
+  padding: var(--space-1) var(--space-2);
+  border-color: transparent;
+  background: transparent;
+  color: var(--accent);
+  font-size: var(--type-caption-size);
+  font-weight: var(--type-callout-weight);
+  letter-spacing: var(--type-caption-tracking);
+}
+
+.auth-page .auth-link:hover {
+  border-color: transparent;
+  color: var(--accent-pressed);
+  opacity: 1;
+}
+
+.auth-alerts {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.auth-page .auth-submit {
+  width: 100%;
+  font-size: var(--type-callout-size);
+  box-shadow: var(--elevation-2);
+}
+
+@media (min-width: 480px) {
+  .auth-page .auth-wrap {
+    max-width: calc(var(--space-16) * 6 + var(--space-12));
+  }
+
+  .auth-card {
+    gap: var(--space-5);
+    padding: var(--space-8);
+  }
+}
+
+@media (min-width: 1024px) {
+  .auth-page .auth-wrap {
+    margin-top: var(--space-10);
+    margin-bottom: var(--space-16);
+  }
+
+  .auth-page .auth-title {
+    font-size: var(--type-large-title-size);
+    letter-spacing: var(--type-large-title-tracking);
+    line-height: var(--type-large-title-leading);
+  }
+
+  .auth-card {
+    padding: var(--space-10);
+  }
+}
+
+@media (pointer: coarse) {
+  .auth-page .auth-google,
+  .auth-page .auth-submit,
+  .auth-page .auth-link,
+  .auth-page .field input {
+    min-height: 44px;
+  }
+}

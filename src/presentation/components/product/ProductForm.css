@@ -1,0 +1,146 @@
+/* Product form — an inset form card with a grouped duplicate/suggestion
+   surface. Scoped through .product-form (two classes) so these overrides win
+   over the shared design system, whose stylesheet is bundled after this file. */
+
+.product-form.form-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 100%;
+  padding: var(--space-4);
+  background: var(--fill-secondary);
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-lg);
+  box-shadow: none;
+}
+
+.product-form .product-form-feedback {
+  display: grid;
+  gap: var(--space-2);
+}
+
+/* Duplicate / suggestion results in one grouped inset surface. */
+.product-duplicates {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--fill);
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-md);
+}
+
+.product-form .product-duplicates-list {
+  gap: var(--space-2);
+}
+
+.product-form .product-suggestion {
+  width: 100%;
+  justify-content: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-raised);
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-md);
+  color: var(--label);
+  text-align: left;
+  box-shadow: var(--elevation-1);
+}
+
+.product-form .product-suggestion:hover {
+  border-color: var(--accent);
+  color: var(--label);
+  opacity: 1;
+}
+
+.product-form .product-suggestion .msr {
+  color: var(--accent);
+}
+
+.product-suggestion-name {
+  flex: auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+  font-size: var(--type-callout-size);
+  font-weight: var(--type-callout-weight);
+  letter-spacing: var(--type-callout-tracking);
+}
+
+.product-form .product-suggestion-count {
+  font-size: var(--type-caption-size);
+  font-weight: var(--type-caption-weight);
+  letter-spacing: var(--type-caption-tracking);
+  color: var(--tertiary-label);
+  white-space: nowrap;
+}
+
+.product-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.product-form .field {
+  margin-bottom: 0;
+}
+
+.product-form .field label {
+  font-size: var(--type-caption-size);
+  font-weight: var(--type-caption-weight);
+  letter-spacing: var(--type-caption-tracking);
+  line-height: var(--type-caption-leading);
+  color: var(--secondary-label);
+}
+
+.product-form .field input,
+.product-form .field select {
+  background: var(--surface-raised);
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-md);
+  font-size: var(--type-body-size);
+}
+
+.product-form .field input:focus,
+.product-form .field select:focus {
+  border-color: var(--accent);
+}
+
+.product-form .field .field-input-wrap .msr {
+  color: var(--secondary-label);
+}
+
+.product-form .product-hint {
+  margin: 0;
+  color: var(--secondary-label);
+  font-size: var(--type-caption-size);
+  letter-spacing: var(--type-caption-tracking);
+  line-height: var(--type-caption-leading);
+}
+
+.product-form .product-hint .msr {
+  color: var(--secondary-label);
+}
+
+.product-form .product-submit {
+  width: 100%;
+  font-size: var(--type-callout-size);
+  box-shadow: var(--elevation-2);
+}
+
+@media (min-width: 768px) {
+  .product-form.form-card {
+    padding: var(--space-6);
+  }
+}
+
+@media (pointer: coarse) {
+  .product-form .product-submit,
+  .product-form .product-suggestion,
+  .product-form .field input,
+  .product-form .field select {
+    min-height: 44px;
+  }
+}

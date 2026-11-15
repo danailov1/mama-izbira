@@ -4,6 +4,7 @@ import { useAuth } from '@/presentation/auth/AuthContext'
 import { Msr } from '@/presentation/components/ui/Msr'
 import { Alert } from '@/presentation/components/ui/Alert'
 import { usePageTitle } from '@/presentation/lib/usePageTitle'
+import './AuthPage.css'
 
 type Mode = 'login' | 'register'
 
@@ -87,28 +88,34 @@ export function AuthPage() {
   }
 
   return (
-    <div className="page">
+    <div className="page auth-page">
       <div className="auth-wrap">
-        <div className="center">
-          <div className="hero-stars" style={{ justifyContent: 'center' }}>
-            {[1, 2, 3, 4, 5].map((i) => (
-              <Msr key={i} icon="star" fill />
-            ))}
-          </div>
-          <span className="eyebrow" style={{ justifyContent: 'center' }}>
-            <Msr icon="login" size="sm" />
-            {mode === 'login' ? 'Добре дошла/дошъл!' : 'Присъедини се'}
-          </span>
-          <h1 className="page-title">{mode === 'login' ? 'Вход в профила' : 'Създай профил'}</h1>
-          <p className="page-sub">
-            {mode === 'login'
-              ? 'Влез, за да пишеш ревюта и да гласуваш за полезните мнения.'
-              : 'Регистрирай се, за да добавяш продукти и да споделяш опита си.'}
-          </p>
-        </div>
+        <section className="auth-card">
+          <header className="auth-head">
+            <div className="hero-stars auth-stars">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Msr key={i} icon="star" fill />
+              ))}
+            </div>
+            <span className="eyebrow auth-eyebrow">
+              <Msr icon="login" size="sm" />
+              {mode === 'login' ? 'Добре дошла/дошъл!' : 'Присъедини се'}
+            </span>
+            <h1 className="page-title auth-title">
+              {mode === 'login' ? 'Вход в профила' : 'Създай профил'}
+            </h1>
+            <p className="page-sub auth-sub">
+              {mode === 'login'
+                ? 'Влез, за да пишеш ревюта и да гласуваш за полезните мнения.'
+                : 'Регистрирай се, за да добавяш продукти и да споделяш опита си.'}
+            </p>
+          </header>
 
-        <div style={{ marginTop: 24 }}>
-          <button className="btn btn-ghost google-btn btn-block" style={{ justifyContent: 'center' }} onClick={google} disabled={busy}>
+          <button
+            className="btn btn-ghost google-btn btn-block auth-google"
+            onClick={google}
+            disabled={busy}
+          >
             <span className="brand-g">
               <span className="b">G</span>
               <span className="r">o</span>
@@ -119,89 +126,105 @@ export function AuthPage() {
             </span>
             {mode === 'login' ? 'Вход с Google' : 'Регистрация с Google'}
           </button>
-        </div>
 
-        <div className="divider">или с имейл</div>
+          <div className="divider">или с имейл</div>
 
-        {mode === 'register' && (
-          <div className="field">
-            <label>Име (как да те наричаме)</label>
-            <div className="field-input-wrap">
-              <Msr icon="person" size="sm" />
-              <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="напр. Ивелина" />
+          <div className="auth-fields">
+            {mode === 'register' && (
+              <div className="field">
+                <label>Име (как да те наричаме)</label>
+                <div className="field-input-wrap">
+                  <Msr icon="person" size="sm" />
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="напр. Ивелина"
+                  />
+                </div>
+              </div>
+            )}
+            <div className="field">
+              <label>Имейл</label>
+              <div className="field-input-wrap">
+                <Msr icon="mail" size="sm" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="ti@primer.bg"
+                />
+              </div>
+            </div>
+            <div className="field">
+              <label>Парола</label>
+              <div className="field-input-wrap">
+                <Msr icon="lock" size="sm" />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="минимум 6 символа"
+                  onKeyDown={(e) => e.key === 'Enter' && submit()}
+                />
+              </div>
             </div>
           </div>
-        )}
-        <div className="field">
-          <label>Имейл</label>
-          <div className="field-input-wrap">
-            <Msr icon="mail" size="sm" />
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ti@primer.bg" />
-          </div>
-        </div>
-        <div className="field">
-          <label>Парола</label>
-          <div className="field-input-wrap">
-            <Msr icon="lock" size="sm" />
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="минимум 6 символа"
-              onKeyDown={(e) => e.key === 'Enter' && submit()}
-            />
-          </div>
-        </div>
 
-        {mode === 'login' && (
-          <p className="center muted" style={{ fontSize: 13, marginTop: -6, marginBottom: 14 }}>
-            <button className="btn btn-ghost btn-sm" onClick={forgot} disabled={busy}>
-              Забравена парола?
+          {mode === 'login' && (
+            <p className="center muted auth-forgot">
+              <button className="btn btn-ghost btn-sm auth-link" onClick={forgot} disabled={busy}>
+                Забравена парола?
+              </button>
+            </p>
+          )}
+
+          {info && (
+            <div className="auth-alerts">
+              <Alert kind="info">
+                <b>Провери имейла си</b>
+                {info}
+              </Alert>
+            </div>
+          )}
+
+          {(error || localError) && (
+            <div className="auth-alerts">
+              <Alert kind="error">
+                <b>
+                  {intent === 'register'
+                    ? 'Неуспешна регистрация'
+                    : intent === 'reset'
+                      ? 'Неуспешно изпращане'
+                      : 'Неуспешен вход'}
+                </b>
+                {localError ?? error}
+              </Alert>
+            </div>
+          )}
+
+          <button className="btn btn-primary btn-block auth-submit" onClick={submit} disabled={busy}>
+            {busy ? <span className="spinner" /> : <Msr icon="login" size="sm" />}
+            {mode === 'login' ? 'Влез' : 'Създай профила'}
+          </button>
+
+          <p className="center muted auth-mode">
+            {mode === 'login' ? 'Нямаш профил?' : 'Вече имаш профил?'}{' '}
+            <button
+              className="btn btn-ghost btn-sm auth-link"
+              onClick={() => {
+                const next = mode === 'login' ? 'register' : 'login'
+                setMode(next)
+                setIntent(next)
+                setLocalError(null)
+                setInfo(null)
+                clearError()
+              }}
+            >
+              {mode === 'login' ? 'Регистрирай се' : 'Влез'}
             </button>
           </p>
-        )}
-
-        {info && (
-          <Alert kind="info" style={{ marginBottom: 14 }}>
-            <b>Провери имейла си</b>
-            {info}
-          </Alert>
-        )}
-
-        {(error || localError) && (
-          <Alert kind="error" style={{ marginBottom: 14 }}>
-            <b>
-              {intent === 'register'
-                ? 'Неуспешна регистрация'
-                : intent === 'reset'
-                  ? 'Неуспешно изпращане'
-                  : 'Неуспешен вход'}
-            </b>
-            {localError ?? error}
-          </Alert>
-        )}
-
-        <button className="btn btn-primary btn-block" style={{ justifyContent: 'center' }} onClick={submit} disabled={busy}>
-          {busy ? <span className="spinner" /> : <Msr icon="login" size="sm" />}
-          {mode === 'login' ? 'Влез' : 'Създай профила'}
-        </button>
-
-        <p className="center muted" style={{ fontSize: 13, marginTop: 18 }}>
-          {mode === 'login' ? 'Нямаш профил?' : 'Вече имаш профил?'}{' '}
-          <button
-            className="btn btn-ghost btn-sm"
-            onClick={() => {
-              const next = mode === 'login' ? 'register' : 'login'
-              setMode(next)
-              setIntent(next)
-              setLocalError(null)
-              setInfo(null)
-              clearError()
-            }}
-          >
-            {mode === 'login' ? 'Регистрирай се' : 'Влез'}
-          </button>
-        </p>
+        </section>
       </div>
     </div>
   )
