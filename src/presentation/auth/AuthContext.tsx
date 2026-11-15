@@ -38,8 +38,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [auth])
 
   useEffect(() => {
-    // Довършва Google redirect входа (мобилни браузъри).
-    auth.completeRedirectSignIn().catch(() => {})
+    // Довършва Google redirect входа (мобилни браузъри). Самата сесия идва през
+    // onAuthStateChanged; тук само показваме грешка, ако redirect-ът се е провалил.
+    auth.completeRedirectSignIn().catch((e) => {
+      if (e instanceof DomainError) setError(e.message)
+      else if (e instanceof Error) setError(translateAuthError(e.message))
+      else setError('Неуспешно влизане с Google. Опитай отново.')
+    })
   }, [auth])
 
   useEffect(() => {
@@ -104,9 +109,21 @@ function translateAuthError(message: string): string {
     'auth/weak-password': 'Паролата е твърде слаба — минимум 6 символа.',
     'auth/popup-closed-by-user': 'Прозорецът за вход беше затворен.',
     'auth/popup-blocked': 'Браузърът блокира изскачащия прозорец. Разреши го и опитай пак.',
+    'auth/cancelled-popup-request': 'Предишният опит за вход не завърши. Опитай отново.',
+    'auth/unauthorized-domain':
+      'Този домейн не е разрешен за вход с Google. Добави го във Firebase → Authentication → Settings → Authorized domains.',
+    'auth/operation-not-allowed': 'Входът с Google не е активиран за този проект.',
+    'auth/account-exists-with-different-credential':
+      'Вече има профил с този имейл. Влез с имейл и парола, после свържи Google.',
+    'auth/network-request-failed': 'Няма връзка със сървъра. Провери интернета и опитай пак.',
+    'auth/too-many-requests': 'Твърде много опити. Изчакай минута и опитай пак.',
+    'auth/invalid-api-key': 'Конфигурацията на Firebase е невалидна (API ключ).',
+    'auth/internal-error': 'Временна грешка във Firebase. Опитай отново.',
   }
   for (const [code, text] of Object.entries(map)) {
     if (message.includes(code)) return text
   }
-  return 'Неуспешно влизане. Опитай отново.'
+  // Непознат код: покажи го, за да е диагностицируемо, вместо да го скриеш.
+  const unknown = /auth\/[a-z-]+/.exec(message)?.[0]
+  return unknown ? `Неуспешно влизане (${unknown}). Опитай отново.` : 'Неуспешно влизане. Опитай отново.'
 }

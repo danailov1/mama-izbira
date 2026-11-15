@@ -21,6 +21,21 @@ const isMobileBrowser = (): boolean =>
   typeof navigator !== 'undefined' &&
   /Android|iPhone|iPad|iPod|Mobile|Opera Mini|IEMobile/i.test(navigator.userAgent)
 
+/**
+ * Popup-ът не е надежден в част от средите (блокирани попъпи, вградени браузъри,
+ * строги настройки). В тези случаи падаме към redirect, вместо входът да умре.
+ */
+const POPUP_FALLBACK_CODES = new Set([
+  'auth/popup-blocked',
+  'auth/operation-not-supported-in-this-environment',
+  'auth/web-storage-unsupported',
+])
+
+const isPopupFallbackError = (err: unknown): boolean => {
+  const code = (err as { code?: string } | null)?.code ?? ''
+  return POPUP_FALLBACK_CODES.has(code)
+}
+
 const toSession = (user: User | null): AuthSession | null => {
   if (!user) return null
   return {
@@ -42,13 +57,24 @@ export class FirebaseAuthGateway implements AuthGateway {
 
   async signInWithGoogle(): Promise<AuthSession> {
     const provider = new GoogleAuthProvider()
+    // Винаги показвай избора на акаунт — иначе „тихият“ вход с последния акаунт
+    // изглежда като нищо да не се е случило на споделени устройства.
+    provider.setCustomParameters({ prompt: 'select_account' })
     if (isMobileBrowser()) {
       // Попъпите са ненадеждни в мобилен Safari/вградени браузъри — използваме redirect.
       await signInWithRedirect(this.auth, provider)
       return new Promise<AuthSession>(() => {})
     }
-    const cred = await signInWithPopup(this.auth, provider)
-    return toSession(cred.user)!
+    try {
+      const cred = await signInWithPopup(this.auth, provider)
+      return toSession(cred.user)!
+    } catch (err) {
+      if (isPopupFallbackError(err)) {
+        await signInWithRedirect(this.auth, provider)
+        return new Promise<AuthSession>(() => {})
+      }
+      throw err
+    }
   }
 
   async completeRedirectSignIn(): Promise<AuthSession | null> {
@@ -57,7 +83,8 @@ export class FirebaseAuthGateway implements AuthGateway {
       return cred ? toSession(cred.user) : null
     } catch (err) {
       console.error('[auth] completeRedirectSignIn', err)
-      return null
+      // Подаваме грешката нагоре, за да я види потребителят, вместо тихо да изчезне.
+      throw err
     }
   }
 
