@@ -1,0 +1,101 @@
+/* Catalog page — one grouped control surface above the product grid.
+   Rules that can collide with the design system are scoped under
+   .catalog-page: page CSS is bundled before design-system.css, so overrides
+   need at least two class selectors instead of relying on cascade order. */
+
+/* The eyebrow is uppercase, which breaks the icon-font ligature: keep the
+   symbol span out of the text transform so a glyph renders instead of the
+   icon name. */
+.catalog-page .eyebrow .msr {
+  text-transform: none;
+}
+
+.catalog-page .catalog-page__controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  background: var(--surface-raised);
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-1);
+}
+
+.catalog-page .catalog-page__controls .chip-row {
+  margin: 0;
+  padding: var(--space-1) 0;
+}
+
+.catalog-page .catalog-page__filter-row {
+  margin-top: 0;
+  justify-content: space-between;
+}
+
+.catalog-page .catalog-page__filter-row .tabs {
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.catalog-page .catalog-page__filter-row .tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.catalog-page .catalog-page__filter-row .tab {
+  flex: 0 0 auto;
+  padding: var(--space-2) var(--space-3);
+}
+
+.catalog-page .catalog-page__error {
+  margin-top: var(--space-5);
+}
+
+.catalog-page .catalog-page__error-text {
+  margin: var(--space-1) 0 var(--space-3);
+}
+
+.catalog-page .catalog-page__results {
+  margin-top: var(--space-6);
+}
+
+.catalog-page .catalog-page__more {
+  margin-top: var(--space-6);
+}
+
+.catalog-page .catalog-page__skeleton {
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.catalog-page .catalog-page__skeleton-thumb {
+  width: var(--space-12);
+  height: var(--space-12);
+  border-radius: var(--radius-sm);
+}
+
+.catalog-page .catalog-page__skeleton-line {
+  width: 100%;
+  height: var(--space-2);
+}
+
+.catalog-page .catalog-page__skeleton-line--short {
+  width: var(--space-12);
+}
+
+.catalog-page .catalog-page__skeleton-line--medium {
+  width: var(--space-16);
+}
+
+@media (min-width: 860px) {
+  .catalog-page .catalog-page__controls {
+    padding: var(--space-5);
+  }
+}
+
+@media (min-width: 1024px) {
+  .catalog-page .grid-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

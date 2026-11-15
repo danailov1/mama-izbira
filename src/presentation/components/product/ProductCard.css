@@ -1,0 +1,39 @@
+/* Product card — an image media box plus the supporting text rows.
+   The design-system class names stay in place for the screens that share them;
+   this file only adds product-card__* classes. Rules that adjust a design-system
+   class use two selectors because component CSS is bundled before
+   design-system.css. */
+
+.product-card__media.product-thumb {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  background: var(--fill-secondary);
+}
+
+.product-card .product-top {
+  align-items: center;
+}
+
+/* The category row is uppercase, which breaks the icon-font ligature: keep the
+   symbol span out of the text transform so a glyph renders instead of the
+   icon name. */
+.product-card .product-cat .msr {
+  text-transform: none;
+}
+
+.product-card__reviews {
+  color: var(--secondary-label);
+  font-size: var(--type-caption-size);
+  font-weight: var(--type-caption-weight);
+  letter-spacing: var(--type-caption-tracking);
+  line-height: var(--type-caption-leading);
+}
+
+.product-card__empty {
+  color: var(--secondary-label);
+  font-size: var(--type-caption-size);
+  font-weight: var(--type-caption-weight);
+  letter-spacing: var(--type-caption-tracking);
+  line-height: var(--type-caption-leading);
+}

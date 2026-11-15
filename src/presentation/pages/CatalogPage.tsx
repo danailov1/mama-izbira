@@ -10,6 +10,7 @@ import { Alert } from '@/presentation/components/ui/Alert'
 import { ProductCard } from '@/presentation/components/product/ProductCard'
 import { EmptyState } from '@/presentation/components/ui/EmptyState'
 import { useAuth } from '@/presentation/auth/AuthContext'
+import './CatalogPage.css'
 
 type SortKey = 'newest' | 'top' | 'rating'
 
@@ -126,7 +127,7 @@ export function CatalogPage() {
   const hasFilters = !!search || !!categoryParam || minRating > 0
 
   return (
-    <div className="page">
+    <div className="page catalog-page">
       <span className="eyebrow">
         <Msr icon="category" size="sm" />
         Каталог
@@ -134,73 +135,73 @@ export function CatalogPage() {
       <h1 className="page-title">Детски продукти</h1>
       <p className="page-sub">Одобрени продукти с честни ревюта от родители.</p>
 
-      <div className="searchbar" style={{ marginTop: 16 }}>
-        <Msr icon="search" />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Търси марка или модел..."
-        />
-        {search && (
-          <button
-            type="button"
-            className="icon-btn"
-            style={{ width: 28, height: 28, border: 'none', background: 'none' }}
-            aria-label="Изчисти търсенето"
-            onClick={() => setSearch('')}
-          >
-            <Msr icon="close" size="sm" />
-          </button>
-        )}
-      </div>
-
-      <div className="chip-row" style={{ marginTop: 16 }}>
-        <button className={`chip ${!categoryParam ? 'active' : ''}`} onClick={() => setCategory('')}>
-          <Msr icon="apps" size="sm" />
-          Всички
-        </button>
-        {categories.map((c) => (
-          <button
-            key={c.id}
-            className={`chip ${categoryParam === c.id ? 'active' : ''}`}
-            onClick={() => setCategory(c.id)}
-          >
-            <Msr icon={c.icon} size="sm" />
-            {c.name}
-          </button>
-        ))}
-      </div>
-
-      <div className="filter-row">
-        <div className="tabs">
-          <button className={`tab ${sort === 'newest' ? 'active' : ''}`} onClick={() => setSort('newest')}>
-            Най-нови
-          </button>
-          <button className={`tab ${sort === 'top' ? 'active' : ''}`} onClick={() => setSort('top')}>
-            Най-коментирани
-          </button>
-          <button className={`tab ${sort === 'rating' ? 'active' : ''}`} onClick={() => setSort('rating')}>
-            Топ оценени
-          </button>
+      <div className="catalog-page__controls">
+        <div className="searchbar">
+          <Msr icon="search" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Търси марка или модел..."
+          />
+          {search && (
+            <button
+              type="button"
+              className="icon-btn"
+              aria-label="Изчисти търсенето"
+              onClick={() => setSearch('')}
+            >
+              <Msr icon="close" size="sm" />
+            </button>
+          )}
         </div>
-        {[0, 3, 4].map((r) => (
-          <button
-            key={r}
-            className={`btn btn-ghost btn-sm ${minRating === r ? 'active' : ''}`}
-            style={minRating === r ? { borderColor: 'var(--berry)', color: 'var(--berry)' } : undefined}
-            onClick={() => setMinRating(r)}
-          >
-            <Msr icon="star" size="sm" />
-            {r === 0 ? 'Всички оценки' : `${r}+ звезди`}
+
+        <div className="chip-row">
+          <button className={`chip ${!categoryParam ? 'active' : ''}`} onClick={() => setCategory('')}>
+            <Msr icon="apps" size="sm" />
+            Всички
           </button>
-        ))}
+          {categories.map((c) => (
+            <button
+              key={c.id}
+              className={`chip ${categoryParam === c.id ? 'active' : ''}`}
+              onClick={() => setCategory(c.id)}
+            >
+              <Msr icon={c.icon} size="sm" />
+              {c.name}
+            </button>
+          ))}
+        </div>
+
+        <div className="filter-row catalog-page__filter-row">
+          <div className="tabs">
+            <button className={`tab ${sort === 'newest' ? 'active' : ''}`} onClick={() => setSort('newest')}>
+              Най-нови
+            </button>
+            <button className={`tab ${sort === 'top' ? 'active' : ''}`} onClick={() => setSort('top')}>
+              Най-коментирани
+            </button>
+            <button className={`tab ${sort === 'rating' ? 'active' : ''}`} onClick={() => setSort('rating')}>
+              Топ оценени
+            </button>
+          </div>
+          {[0, 3, 4].map((r) => (
+            <button
+              key={r}
+              className={`btn btn-ghost btn-sm ${minRating === r ? 'active' : ''}`}
+              onClick={() => setMinRating(r)}
+            >
+              <Msr icon="star" size="sm" />
+              {r === 0 ? 'Всички оценки' : `${r}+ звезди`}
+            </button>
+          ))}
+        </div>
       </div>
 
       {error && (
-        <div style={{ marginTop: 20 }}>
+        <div className="catalog-page__error">
           <Alert kind="error" title="Грешка при зареждане">
-            <p style={{ margin: '4px 0 10px' }}>{error}</p>
+            <p className="catalog-page__error-text">{error}</p>
             <button className="btn btn-secondary btn-sm" onClick={() => setReloadToken((n) => n + 1)}>
               <Msr icon="refresh" size="sm" />
               Опитай отново
@@ -209,15 +210,15 @@ export function CatalogPage() {
         </div>
       )}
 
-      <div style={{ marginTop: 24 }}>
+      <div className="catalog-page__results">
         {loading ? (
           <div className="grid-cards">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="product-card">
-                <div className="skeleton" style={{ width: 52, height: 52, borderRadius: 10 }} />
-                <div className="skeleton" style={{ width: '70%', height: 14 }} />
-                <div className="skeleton" style={{ width: '40%', height: 12 }} />
-                <div className="skeleton" style={{ width: '55%', height: 12 }} />
+              <div key={i} className="product-card catalog-page__skeleton">
+                <div className="skeleton catalog-page__skeleton-thumb" />
+                <div className="skeleton catalog-page__skeleton-line" />
+                <div className="skeleton catalog-page__skeleton-line catalog-page__skeleton-line--short" />
+                <div className="skeleton catalog-page__skeleton-line catalog-page__skeleton-line--medium" />
               </div>
             ))}
           </div>
@@ -257,7 +258,7 @@ export function CatalogPage() {
               ))}
             </div>
             {!exhausted && (
-              <div className="center" style={{ marginTop: 24 }}>
+              <div className="center catalog-page__more">
                 <button className="btn btn-secondary" onClick={loadMore} disabled={loadingMore}>
                   {loadingMore ? <span className="spinner" /> : <Msr icon="expand_more" size="sm" />}
                   Зареди още
