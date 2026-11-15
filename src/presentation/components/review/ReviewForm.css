@@ -1,0 +1,54 @@
+/* ==========================================================================
+   Review editor — inset form surface.
+   Keeps the design-system .form-card surface, star input, textarea, hint,
+   error and action row; this file only adjusts layout, using tokens only.
+   Selectors out-rank the design-system base rules (>= 0,2,0) because the
+   component CSS is bundled before design-system.css.
+   ========================================================================== */
+
+.detail-review-form.form-card {
+  max-width: 100%;
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-1);
+}
+
+.detail-review-form .detail-review-form-title {
+  margin: 0 0 var(--space-4);
+  font-size: var(--type-body-size);
+  font-weight: var(--type-title-weight);
+  letter-spacing: var(--type-body-tracking);
+  line-height: var(--type-headline-leading);
+  color: var(--label);
+}
+
+.detail-review-form .field textarea {
+  resize: vertical;
+}
+
+.detail-review-form .form-error {
+  align-items: flex-start;
+}
+
+.detail-review-form .detail-review-form-actions {
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+@media (max-width: 759px) {
+  .detail-review-form.form-card {
+    padding: var(--space-4);
+  }
+}
+
+/* Coarse pointers: star buttons and actions reach the 44px touch target. */
+@media (pointer: coarse) {
+  .detail-review-form .star-input button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .detail-review-form .btn {
+    min-height: 44px;
+  }
+}

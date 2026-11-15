@@ -16,6 +16,7 @@ import { EmptyState } from '@/presentation/components/ui/EmptyState'
 import { ReviewCard } from '@/presentation/components/review/ReviewCard'
 import { ReviewForm } from '@/presentation/components/review/ReviewForm'
 import { isModerator } from '@/core/usecases/auth-service'
+import './ProductDetailPage.css'
 
 const authorCache = new Map<string, string>()
 
@@ -121,27 +122,35 @@ export function ProductDetailPage() {
 
   if (notFound) {
     return (
-      <div className="page">
-        <EmptyState
-          icon="inventory_2"
-          title="Продуктът не е намерен"
-          text="Възможно е да е отхвърлен от модератор или да е изтрит."
-          action={
-            <button className="btn btn-primary" onClick={() => navigate('/catalog')}>
-              <Msr icon="arrow_back" size="sm" />
-              Към каталога
-            </button>
-          }
-        />
+      <div className="page detail-page">
+        <div className="detail-notfound-wrap">
+          <EmptyState
+            icon="inventory_2"
+            title="Продуктът не е намерен"
+            text="Възможно е да е отхвърлен от модератор или да е изтрит."
+            action={
+              <button className="btn btn-primary" onClick={() => navigate('/catalog')}>
+                <Msr icon="arrow_back" size="sm" />
+                Към каталога
+              </button>
+            }
+          />
+        </div>
       </div>
     )
   }
 
   if (!product) {
     return (
-      <div className="page">
-        <div className="skeleton" style={{ width: '60%', height: 28, marginBottom: 12 }} />
-        <div className="skeleton" style={{ width: '100%', height: 120, borderRadius: 22 }} />
+      <div className="page detail-page">
+        <div className="detail-skeleton">
+          <div className="skeleton detail-skeleton-media" />
+          <div className="detail-skeleton-body">
+            <div className="skeleton detail-skeleton-line detail-skeleton-line-title" />
+            <div className="skeleton detail-skeleton-line" />
+            <div className="skeleton detail-skeleton-line detail-skeleton-line-short" />
+          </div>
+        </div>
       </div>
     )
   }
@@ -149,8 +158,8 @@ export function ProductDetailPage() {
   const isOwnProduct = user?.id === product.createdBy
 
   return (
-    <div className="page">
-      <div className="breadcrumbs">
+    <div className="page detail-page">
+      <div className="breadcrumbs detail-breadcrumbs">
         <Link to="/">Начало</Link>
         <Msr icon="chevron_right" />
         <Link to="/catalog">Каталог</Link>
@@ -166,8 +175,8 @@ export function ProductDetailPage() {
         </span>
       </div>
 
-      <div className="product-hero">
-        <div className="product-thumb berry" style={{ width: 72, height: 72 }}>
+      <div className="product-hero detail-hero">
+        <div className="detail-hero-media">
           {product.imageUrl && !imageFailed ? (
             <img
               src={product.imageUrl}
@@ -175,99 +184,101 @@ export function ProductDetailPage() {
               onError={() => setImageFailed(true)}
             />
           ) : (
-            <Msr icon={category?.icon ?? 'inventory_2'} size="lg" />
+            <div className="detail-hero-placeholder">
+              <Msr icon={category?.icon ?? 'inventory_2'} size="xl" />
+            </div>
           )}
         </div>
-        <div className="product-hero-info">
+        <div className="product-hero-info detail-hero-info">
           <span className="product-cat">
             <Msr icon={category?.icon ?? 'category'} />
             {category?.name ?? 'Категория'}
           </span>
-          <h1 className="page-title" style={{ marginBottom: 4 }}>
+          <h1 className="page-title detail-hero-title">
             {product.brand} {product.model}
           </h1>
-          <div className="row" style={{ gap: 10 }}>
+          <div className="row detail-hero-meta">
             <ProductBadge status={product.status} />
             {product.reviewsCount > 0 && (
-              <div className="rating-line">
+              <div className="rating-line detail-hero-rating">
                 <Stars rating={product.avgRating} size="sm" />
                 <span className="rating-num">{product.avgRating.toFixed(1)}</span>
-                <span className="muted" style={{ fontSize: 12 }}>
+                <span className="muted detail-hero-rating-count">
                   · {product.reviewsCount} {plural(product.reviewsCount, 'ревю', 'ревюта')}
                 </span>
               </div>
             )}
           </div>
-          <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>
+          <p className="muted detail-hero-byline">
             Добавен от {creator?.displayName ?? 'родител'} · {timeAgo(product.createdAt)}
           </p>
         </div>
       </div>
 
-      {product.status === 'approved' && product.reviewsCount > 0 && (
-        <div className="row" style={{ margin: '24px 0' }}>
-          <div className="stamp">
-            <Msr icon="verified" />
-            Одобрено
-            <br />
-            от мамаИзбира
+      <div className="detail-status-group">
+        {product.status === 'approved' && product.reviewsCount > 0 && (
+          <div className="detail-status-panel detail-status-approved">
+            <div className="stamp">
+              <Msr icon="verified" />
+              Одобрено
+              <br />
+              от мамаИзбира
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {product.status === 'pending' && (
-        <div style={{ margin: '24px 0' }}>
-          <Alert kind="warning">
-            <b>Чака преглед</b>
-            {isOwnProduct
-              ? 'Твоят продукт изчаква одобрение от модератор.'
-              : 'Този продукт все още не е одобрен от модератор.'}
-          </Alert>
-        </div>
-      )}
+        {product.status === 'pending' && (
+          <div className="detail-status-panel detail-status-pending">
+            <Alert kind="warning">
+              <b>Чака преглед</b>
+              {isOwnProduct
+                ? 'Твоят продукт изчаква одобрение от модератор.'
+                : 'Този продукт все още не е одобрен от модератор.'}
+            </Alert>
+          </div>
+        )}
 
-      {product.status === 'rejected' && (
-        <div style={{ margin: '24px 0' }}>
-          <Alert kind="error">
-            <b>Отхвърлен</b>
-            {product.rejectionReason || 'Продуктът не премина модерацията.'}
-          </Alert>
-        </div>
-      )}
+        {product.status === 'rejected' && (
+          <div className="detail-status-panel detail-status-rejected">
+            <Alert kind="error">
+              <b>Отхвърлен</b>
+              {product.rejectionReason || 'Продуктът не премина модерацията.'}
+            </Alert>
+          </div>
+        )}
 
-      {product.status === 'approved' && !session && (
-        <Alert kind="info" title="Съвет" style={{ marginBottom: 16 }}>
-          Влез в профила си, за да пишеш ревюта и да гласуваш за полезните мнения.
-        </Alert>
-      )}
+        {product.status === 'approved' && !session && (
+          <div className="detail-status-panel detail-status-hint">
+            <Alert kind="info" title="Съвет">
+              Влез в профила си, за да пишеш ревюта и да гласуваш за полезните мнения.
+            </Alert>
+          </div>
+        )}
 
-      {product.status === 'approved' && session && myReview && (
-        <div style={{ margin: '20px 0' }}>
-          <Alert kind="success">
-            <b>Твоето ревю е публикувано</b>
-            Оценката ти е включена в средната стойност на продукта.
-          </Alert>
-        </div>
-      )}
+        {product.status === 'approved' && session && myReview && (
+          <div className="detail-status-panel detail-status-success">
+            <Alert kind="success">
+              <b>Твоето ревю е публикувано</b>
+              Оценката ти е включена в средната стойност на продукта.
+            </Alert>
+          </div>
+        )}
+      </div>
 
       {product.status === 'approved' && (
-        <section style={{ marginTop: 28 }}>
-          <span className="eyebrow">
+        <section className="detail-reviews">
+          <span className="eyebrow detail-reviews-eyebrow">
             <Msr icon="rate_review" size="sm" />
             Ревюта · {reviews.length}
           </span>
-          <h2 className="section-title">Какво мислят родителите</h2>
+          <h2 className="section-title detail-reviews-title">Какво мислят родителите</h2>
 
           {session && (
-            <div style={{ margin: '16px 0 28px' }}>
+            <div className="detail-review-editor">
               {myReview && !editing ? (
-                <div className="stack">
+                <div className="stack detail-review-mine">
                   <ReviewCard review={myReview} myReview authorName={user?.displayName} />
-                  <button
-                    className="btn btn-ghost btn-sm"
-                    style={{ alignSelf: 'flex-start' }}
-                    onClick={() => navigate(`?edit=my`)}
-                  >
+                  <button className="btn btn-ghost btn-sm detail-review-edit" onClick={() => navigate(`?edit=my`)}>
                     <Msr icon="edit" size="sm" />
                     Редактирай ревюто
                   </button>
@@ -290,7 +301,7 @@ export function ProductDetailPage() {
               text={session ? 'Бъди първият, който сподели опита си с този продукт.' : 'Влез, за да бъдеш първият с мнение.'}
             />
           ) : (
-            <div className="stack">
+            <div className="detail-review-list">
               {reviews
                 .filter((r) => !(myReview && r.id === myReview.id))
                 .map((r) => (
@@ -307,7 +318,7 @@ export function ProductDetailPage() {
       )}
 
       {isModerator(user) && (
-        <section style={{ marginTop: 40 }}>
+        <section className="detail-moderator">
           <Alert kind="info">
             <b>Модераторски панел</b>
             {product.status === 'pending'
