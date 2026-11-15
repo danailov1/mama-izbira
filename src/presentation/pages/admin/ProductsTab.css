@@ -1,0 +1,71 @@
+/* ==========================================================================
+   Admin · Products moderation queue
+   Page CSS is bundled before design-system.css, so every override below is
+   scoped under .products-tab and carries at least two class selectors.
+   ========================================================================== */
+
+.products-tab .filter-row {
+  margin-top: 0;
+}
+
+/* Inset grouped queue: header band, hairline rows, quiet row feedback. */
+.products-tab thead th {
+  background: var(--fill-secondary);
+}
+
+.products-tab tbody tr {
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.products-tab tbody tr:hover,
+.products-tab tbody tr:focus-within {
+  background: var(--fill-secondary);
+}
+
+/* Horizontal scroll for the six-column queue at narrow widths. */
+.products-tab .table-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
+.products-tab th:last-child,
+.products-tab td:last-child {
+  text-align: right;
+}
+
+.products-tab .row-actions {
+  justify-content: flex-end;
+}
+
+/* Creator chip — sized by class instead of inline width/height. */
+.products-tab .creator-avatar {
+  width: var(--space-6);
+  height: var(--space-6);
+  font-size: var(--type-caption-size);
+  letter-spacing: var(--type-caption-tracking);
+}
+
+.products-tab .creator-name {
+  white-space: nowrap;
+}
+
+/* Compact cell padding on phones, so more of the queue is visible at 360px. */
+@media (max-width: 759px) {
+  .products-tab thead th,
+  .products-tab tbody td {
+    padding: var(--space-3);
+  }
+}
+
+/* 44x44 minimum touch target for the icon-only moderation actions. */
+@media (pointer: coarse) {
+  .products-tab .queue-action {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .products-tab tbody tr {
+    transition: none;
+  }
+}
