@@ -9,11 +9,11 @@ import { initials, roleLabel } from '@/presentation/lib/format'
 import { Msr } from '@/presentation/components/ui/Msr'
 import { Alert } from '@/presentation/components/ui/Alert'
 import { EmptyState } from '@/presentation/components/ui/EmptyState'
-import { Stars } from '@/presentation/components/ui/Stars'
 import { ProductBadge } from '@/presentation/components/ui/Badge'
 import { ReviewCard } from '@/presentation/components/review/ReviewCard'
 import { isModerator } from '@/core/usecases/auth-service'
 import { usePageTitle } from '@/presentation/lib/usePageTitle'
+import './ProfilePage.css'
 
 export function ProfilePage() {
   const { user, session, loading, logout, resendVerification } = useAuth()
@@ -56,15 +56,15 @@ export function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="page">
-        <div className="skeleton" style={{ width: '40%', height: 26 }} />
+      <div className="page profile-page">
+        <div className="skeleton profile-skeleton__title" />
       </div>
     )
   }
 
   if (!session) {
     return (
-      <div className="page">
+      <div className="page profile-page">
         <EmptyState
           icon="person"
           title="Все още не си влязъл"
@@ -85,19 +85,13 @@ export function ProfilePage() {
   const mod = isModerator(user)
 
   return (
-    <div className="page">
-      <div className="product-hero">
-        <div className="nav-avatar" style={{ width: 64, height: 64, fontSize: 20 }}>
-          {initials(displayName)}
-        </div>
-        <div className="product-hero-info">
-          <h1 className="page-title" style={{ marginBottom: 2 }}>
-            {displayName}
-          </h1>
-          <p className="muted" style={{ fontSize: 13 }}>
-            {user?.email}
-          </p>
-          <div className="row" style={{ gap: 10, marginTop: 8 }}>
+    <div className="page profile-page">
+      <header className="profile-identity">
+        <div className="nav-avatar profile-identity__avatar">{initials(displayName)}</div>
+        <div className="profile-identity__body">
+          <h1 className="page-title profile-identity__name">{displayName}</h1>
+          <p className="muted profile-identity__email">{user?.email}</p>
+          <div className="row profile-identity__meta">
             {mod && (
               <span className="badge badge-approved">
                 <Msr icon="shield" size="sm" />
@@ -105,19 +99,19 @@ export function ProfilePage() {
               </span>
             )}
             {!user && <span className="badge badge-pending">Профилът се създава…</span>}
-            <button className="btn btn-ghost btn-sm" onClick={() => logout()}>
+            <button className="btn btn-ghost btn-sm profile-identity__logout" onClick={() => logout()}>
               <Msr icon="logout" size="sm" />
               Изход
             </button>
           </div>
         </div>
-      </div>
+      </header>
 
       {!session.emailVerified && (
-        <Alert kind="warning" style={{ marginTop: 18 }} title="Потвърди имейла си">
-          <p style={{ margin: '4px 0 10px' }}>
-            Изпратихме линк за потвърждение на {session.email ?? 'имейла ти'}. Ако не го намираш, провери и
-            папка „Спам“.
+        <Alert kind="warning" title="Потвърди имейла си">
+          <p className="profile-verify__text">
+            Изпратихме линк за потвърждение на {session.email ?? 'имейла ти'}. Ако не го намираш, провери и папка
+            „Спам“.
           </p>
           <button className="btn btn-secondary btn-sm" onClick={() => resendVerification()}>
             <Msr icon="forward_to_inbox" size="sm" />
@@ -126,7 +120,7 @@ export function ProfilePage() {
         </Alert>
       )}
 
-      <div className="stats-strip" style={{ marginTop: 24 }}>
+      <div className="stats-strip profile-stats">
         <div className="stat-card">
           <Msr icon="rate_review" size="lg" />
           <div className="stat-num">{activeReviews.length}</div>
@@ -139,11 +133,11 @@ export function ProfilePage() {
         </div>
       </div>
 
-      <section style={{ marginTop: 32 }}>
-        <span className="eyebrow">
+      <section className="profile-section">
+        <h2 className="eyebrow profile-section__title">
           <Msr icon="rate_review" size="sm" />
           Моите ревюта
-        </span>
+        </h2>
         {activeReviews.length === 0 ? (
           <EmptyState
             icon="edit_note"
@@ -157,18 +151,12 @@ export function ProfilePage() {
             }
           />
         ) : (
-          <div className="stack">
+          <div className="profile-review-list">
             {activeReviews.map((r) => (
-              <div key={r.productId}>
-                <div className="inline" style={{ marginBottom: 8 }}>
-                  <Link
-                    to={`/products/${r.productId}?edit=my`}
-                    style={{ fontWeight: 700, fontSize: 14, color: 'var(--berry)' }}
-                  >
-                    {productTitles[r.productId] ?? 'Продукт…'}
-                  </Link>
-                  <Stars rating={r.rating} size="sm" />
-                </div>
+              <div key={r.productId} className="profile-review-item">
+                <Link className="profile-review-item__product" to={`/products/${r.productId}?edit=my`}>
+                  {productTitles[r.productId] ?? 'Продукт…'}
+                </Link>
                 <ReviewCard review={r} myReview authorName={displayName} />
               </div>
             ))}
@@ -176,11 +164,11 @@ export function ProfilePage() {
         )}
       </section>
 
-      <section style={{ marginTop: 40 }}>
-        <span className="eyebrow">
+      <section className="profile-section">
+        <h2 className="eyebrow profile-section__title">
           <Msr icon="inventory_2" size="sm" />
           Моите добавени продукти
-        </span>
+        </h2>
         {myProducts.length === 0 ? (
           <EmptyState
             icon="add_circle"
@@ -194,30 +182,28 @@ export function ProfilePage() {
             }
           />
         ) : (
-          <div className="grid-cards">
+          <div className="grid-cards profile-products">
             {myProducts.map((p) => (
-              <div key={p.id} className="product-card" style={{ cursor: 'default' }}>
+              <div key={p.id} className="product-card profile-product-card">
                 <div className="product-top">
                   <div className="product-thumb">
                     <Msr icon={categories.find((c) => c.id === p.categoryId)?.icon ?? 'inventory_2'} />
                   </div>
                   <ProductBadge status={p.status} />
                 </div>
-                <div>
+                <div className="profile-product-card__meta">
                   <span className="product-cat">
                     <Msr icon="category" />
                     {categories.find((c) => c.id === p.categoryId)?.name ?? 'Категория'}
                   </span>
                   <h3 className="product-name">
-                    <Link to={`/products/${p.id}`}>
+                    <Link className="profile-product-card__link" to={`/products/${p.id}`}>
                       {p.brand} {p.model}
                     </Link>
                   </h3>
                 </div>
                 {p.status === 'rejected' && p.rejectionReason && (
-                  <p className="muted" style={{ fontSize: 12, margin: 0 }}>
-                    Причина: {p.rejectionReason}
-                  </p>
+                  <p className="muted profile-product-card__reason">Причина: {p.rejectionReason}</p>
                 )}
               </div>
             ))}

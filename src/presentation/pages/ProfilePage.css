@@ -1,0 +1,324 @@
+/* ==========================================================================
+   Profile page — grouped identity header, inset verification panel, tokenised
+   stats strip, a reviews list and an added-products grid.
+
+   Page CSS is bundled before design-system.css (main.tsx imports App first), so
+   every rule that touches a design-system class is scoped under .profile-page
+   (specificity 0,2,0 or higher) and references values only through var(--token).
+   ========================================================================== */
+
+.profile-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* ----- Identity header ---------------------------------------------------- */
+
+.profile-page .profile-identity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: var(--surface-raised);
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-2);
+}
+
+.profile-page .profile-identity__avatar {
+  width: var(--space-16);
+  height: var(--space-16);
+  font-size: var(--type-title-size);
+  letter-spacing: var(--type-title-tracking);
+}
+
+.profile-page .profile-identity__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-page .profile-identity__name {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.profile-page .profile-identity__email {
+  margin: var(--space-1) 0 0;
+  font-size: var(--type-callout-size);
+  line-height: var(--type-callout-leading);
+  letter-spacing: var(--type-callout-tracking);
+  overflow-wrap: anywhere;
+}
+
+.profile-page .profile-identity__meta {
+  margin-top: var(--space-3);
+  gap: var(--space-2);
+  row-gap: var(--space-2);
+}
+
+/* Logout is a secondary, quiet action: never competes with the page content. */
+.profile-page .profile-identity__logout {
+  color: var(--secondary-label);
+}
+
+.profile-page .profile-identity__logout:hover {
+  color: var(--accent);
+}
+
+/* ----- Inset verification status panel ----------------------------------- */
+
+.profile-page .alert-warning {
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  align-items: flex-start;
+  border-radius: var(--radius-lg);
+  background: var(--accent-tint);
+  border-color: var(--accent-tint-strong);
+  color: var(--label);
+  box-shadow: none;
+}
+
+.profile-page .alert-warning b {
+  margin-bottom: var(--space-1);
+  color: var(--label);
+  font-size: var(--type-callout-size);
+  letter-spacing: var(--type-callout-tracking);
+}
+
+.profile-page .profile-verify__text {
+  margin: 0 0 var(--space-4);
+  color: var(--label);
+  font-size: var(--type-callout-size);
+  line-height: var(--type-callout-leading);
+  letter-spacing: var(--type-callout-tracking);
+}
+
+/* ----- Tokenised stats strip: one grouped surface, two divided cells ----- */
+
+.profile-page .profile-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  overflow: hidden;
+  background: var(--surface-raised);
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-1);
+}
+
+.profile-page .profile-stats .stat-card {
+  padding: var(--space-4);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+}
+
+.profile-page .profile-stats .stat-card + .stat-card {
+  border-left: 1px solid var(--separator-translucent);
+}
+
+.profile-page .profile-stats .stat-num {
+  font-size: var(--type-title-size);
+  letter-spacing: var(--type-title-tracking);
+  line-height: var(--type-title-leading);
+  font-variant-numeric: tabular-nums;
+}
+
+.profile-page .profile-stats .stat-label {
+  letter-spacing: var(--type-caption-tracking);
+  line-height: var(--type-caption-leading);
+}
+
+/* ----- Sections ---------------------------------------------------------- */
+
+.profile-page .profile-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.profile-page .profile-section__title {
+  margin: 0;
+}
+
+/* The eyebrow is uppercase, which breaks the icon-font ligature: keep the
+   symbol span out of the text transform so a glyph renders, not a ligature name. */
+.profile-page .eyebrow .msr {
+  text-transform: none;
+}
+
+/* ----- My reviews -------------------------------------------------------- */
+
+.profile-page .profile-review-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.profile-page .profile-review-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+/* The product is the context for a review, so it reads as a quiet berry tag
+   above the grouped review card rather than a second competing headline. */
+.profile-page .profile-review-item__product {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--accent-tint);
+  color: var(--accent);
+  font-size: var(--type-caption-size);
+  font-weight: var(--type-caption-weight);
+  line-height: var(--type-caption-leading);
+  letter-spacing: var(--type-caption-tracking);
+  overflow-wrap: anywhere;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.profile-page .profile-review-item__product:hover {
+  opacity: 0.8;
+}
+
+.profile-page .profile-review-item__product:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ----- My products ------------------------------------------------------- */
+
+.profile-page .profile-products {
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+.profile-page .profile-product-card {
+  gap: var(--space-3);
+  /* The card itself is not a link — only its title is — so it never offers a
+     pointer affordance it cannot honour. */
+  cursor: default;
+}
+
+.profile-page .profile-product-card:hover {
+  transform: none;
+}
+
+.profile-page .profile-product-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.profile-page .profile-product-card .product-name {
+  font-size: var(--type-callout-size);
+  line-height: var(--type-callout-leading);
+}
+
+.profile-page .profile-product-card__link:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.profile-page .profile-product-card__link:hover {
+  color: var(--accent);
+}
+
+.profile-page .profile-product-card__reason {
+  margin: 0;
+  font-size: var(--type-caption-size);
+  line-height: var(--type-caption-leading);
+  letter-spacing: var(--type-caption-tracking);
+}
+
+/* ----- Loading skeleton -------------------------------------------------- */
+
+.profile-page .profile-skeleton__title {
+  width: 40%;
+  height: var(--space-6);
+}
+
+/* ----- Larger widths: generous rhythm and a responsive grid -------------- */
+
+@media (min-width: 640px) {
+  .profile-page .profile-identity {
+    gap: var(--space-5);
+    padding: var(--space-6);
+  }
+
+  .profile-page .profile-identity__avatar {
+    width: calc(var(--space-16) + var(--space-2));
+    height: calc(var(--space-16) + var(--space-2));
+  }
+
+  .profile-page .profile-stats .stat-card {
+    padding: var(--space-5);
+  }
+
+  .profile-page .profile-products {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .profile-page {
+    gap: var(--space-10);
+  }
+
+  .profile-page .profile-identity {
+    gap: var(--space-6);
+    padding: var(--space-8);
+    border-radius: var(--radius-xl);
+  }
+
+  .profile-page .profile-identity__avatar {
+    width: calc(var(--space-16) + var(--space-4));
+    height: calc(var(--space-16) + var(--space-4));
+  }
+
+  .profile-page .profile-review-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-5);
+    align-items: start;
+  }
+
+  .profile-page .profile-section {
+    gap: var(--space-5);
+  }
+
+  .profile-page .profile-products {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-5);
+  }
+}
+
+/* ----- Coarse pointers: every tap target is at least 44px ---------------- */
+
+@media (pointer: coarse) {
+  .profile-page .profile-review-item__product {
+    min-height: 44px;
+    padding: var(--space-2) var(--space-4);
+  }
+
+  .profile-page .profile-product-card__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}
+
+/* ----- Reduced motion: keep opacity feedback only ------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  .profile-page .profile-review-item__product {
+    transition: none;
+  }
+}
