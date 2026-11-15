@@ -9,6 +9,7 @@ import { EmptyState } from '@/presentation/components/ui/EmptyState'
 import { ConfirmModal } from '@/presentation/components/ui/ConfirmModal'
 import { useToast } from '@/presentation/components/ui/Toast'
 import { timeAgo } from '@/presentation/lib/format'
+import './ReportsTab.css'
 
 interface ReportExtra {
   product?: Product | null
@@ -92,28 +93,28 @@ export function ReportsTab() {
 
   if (visible.length === 0) {
     return (
-      <EmptyState
-        icon="flag"
-        title={filter === 'new' ? 'Няма нови доклади' : 'Няма доклади'}
-        text="Когато потребител докладва ревю, то ще се появи тук."
-      />
+      <div className="reports-tab">
+        <EmptyState
+          icon="flag"
+          title={filter === 'new' ? 'Няма нови доклади' : 'Няма доклади'}
+          text="Когато потребител докладва ревю, то ще се появи тук."
+        />
+      </div>
     )
   }
 
   return (
-    <div className="stack">
-      <div className="filter-row" style={{ marginTop: 0 }}>
+    <div className="stack reports-tab">
+      <div className="filter-row">
         <button
-          className={`btn btn-ghost btn-sm ${filter === 'new' ? 'active' : ''}`}
-          style={filter === 'new' ? { borderColor: 'var(--berry)', color: 'var(--berry)' } : undefined}
+          className={`btn btn-ghost btn-sm${filter === 'new' ? ' active' : ''}`}
           onClick={() => setFilter('new')}
         >
           <Msr icon="notifications" size="sm" />
           Нови
         </button>
         <button
-          className={`btn btn-ghost btn-sm ${filter === 'all' ? 'active' : ''}`}
-          style={filter === 'all' ? { borderColor: 'var(--berry)', color: 'var(--berry)' } : undefined}
+          className={`btn btn-ghost btn-sm${filter === 'all' ? ' active' : ''}`}
           onClick={() => setFilter('all')}
         >
           <Msr icon="inbox" size="sm" />
@@ -131,8 +132,8 @@ export function ReportsTab() {
             <div className="avatar">
               <Msr icon="flag" size="sm" />
             </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+            <div className="reports-body">
+              <div className="reports-head">
                 <div>
                   <span className="review-name">
                     {product ? (
@@ -153,19 +154,13 @@ export function ReportsTab() {
                 </span>
               </div>
 
-              <div
-                style={{
-                  background: 'var(--oat)',
-                  borderRadius: 12,
-                  padding: '10px 14px',
-                  margin: '10px 0',
-                  fontSize: 13,
-                }}
-              >
-                <b style={{ fontSize: 12, color: 'var(--berry)' }}>Причина: </b>
-                {r.reason}
+              <div className="reports-quote">
+                <div>
+                  <b className="reports-quote-label">Причина: </b>
+                  {r.reason}
+                </div>
                 {review && (
-                  <div style={{ marginTop: 6, color: 'var(--grey)' }}>
+                  <div className="reports-quote-review">
                     <b>Ревю: </b>
                     {review.status === 'visible'
                       ? `${'★'.repeat(review.rating)} · ${review.text.slice(0, 120)}${review.text.length > 120 ? '…' : ''}`
@@ -175,7 +170,7 @@ export function ReportsTab() {
               </div>
 
               {r.status === 'new' && (
-                <div className="row">
+                <div className="row reports-actions">
                   <button
                     className="btn btn-danger btn-sm"
                     disabled={busyId === r.id}

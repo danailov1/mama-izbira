@@ -10,6 +10,7 @@ import { Modal } from '@/presentation/components/ui/Modal'
 import { ProductBadge } from '@/presentation/components/ui/Badge'
 import { useToast } from '@/presentation/components/ui/Toast'
 import { formatDate, initials } from '@/presentation/lib/format'
+import './ProductsTab.css'
 
 type Filter = 'pending' | 'all'
 
@@ -76,18 +77,16 @@ export function ProductsTab() {
   }
 
   const filterRow = (
-    <div className="filter-row" style={{ marginTop: 0 }}>
+    <div className="filter-row">
       <button
-        className={`btn btn-ghost btn-sm ${filter === 'pending' ? 'active' : ''}`}
-        style={filter === 'pending' ? { borderColor: 'var(--berry)', color: 'var(--berry)' } : undefined}
+        className={`btn btn-ghost btn-sm${filter === 'pending' ? ' active' : ''}`}
         onClick={() => setFilter('pending')}
       >
         <Msr icon="schedule" size="sm" />
         Чакащи
       </button>
       <button
-        className={`btn btn-ghost btn-sm ${filter === 'all' ? 'active' : ''}`}
-        style={filter === 'all' ? { borderColor: 'var(--berry)', color: 'var(--berry)' } : undefined}
+        className={`btn btn-ghost btn-sm${filter === 'all' ? ' active' : ''}`}
         onClick={() => setFilter('all')}
       >
         <Msr icon="inventory_2" size="sm" />
@@ -97,7 +96,7 @@ export function ProductsTab() {
   )
 
   return (
-    <div className="stack">
+    <div className="stack products-tab">
       {filterRow}
 
       {visible.length === 0 ? (
@@ -141,10 +140,10 @@ export function ProductsTab() {
                     </td>
                     <td>
                       <span className="inline">
-                        <span className="avatar" style={{ width: 26, height: 26, fontSize: 10 }}>
+                        <span className="avatar creator-avatar">
                           {initials(creators[p.createdBy] ?? 'Р')}
                         </span>
-                        {creators[p.createdBy] ?? 'Родител'}
+                        <span className="creator-name">{creators[p.createdBy] ?? 'Родител'}</span>
                       </span>
                     </td>
                     <td>{formatDate(p.createdAt)}</td>
@@ -152,8 +151,7 @@ export function ProductsTab() {
                       <div className="row-actions">
                         {p.status !== 'approved' && (
                           <button
-                            className="btn btn-icon-only btn-primary"
-                            style={{ width: 34, height: 34 }}
+                            className="btn btn-icon-only btn-primary queue-action"
                             aria-label={`Одобри ${p.brand} ${p.model}`}
                             onClick={() => approve(p)}
                           >
@@ -162,8 +160,7 @@ export function ProductsTab() {
                         )}
                         {p.status !== 'rejected' && (
                           <button
-                            className="btn btn-icon-only btn-danger"
-                            style={{ width: 34, height: 34 }}
+                            className="btn btn-icon-only btn-danger queue-action"
                             aria-label={`Отхвърли ${p.brand} ${p.model}`}
                             onClick={() => setRejecting(p)}
                           >

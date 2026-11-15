@@ -1,0 +1,74 @@
+/* ==========================================================================
+   Admin · Reports queue
+   Page CSS is bundled before design-system.css, so every override below is
+   scoped under .reports-tab and carries at least two class selectors.
+   ========================================================================== */
+
+.reports-tab .filter-row {
+  margin-top: 0;
+}
+
+.reports-tab .reports-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.reports-tab .reports-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.reports-tab .badge {
+  flex: 0 0 auto;
+}
+
+/* Quoted report body — an inset surface of its own, not a colour block. */
+.reports-tab .reports-quote {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: var(--space-3) 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--fill-secondary);
+  border-radius: var(--radius-md);
+  color: var(--label);
+  font-size: var(--type-callout-size);
+  line-height: var(--type-callout-leading);
+  word-break: break-word;
+}
+
+.reports-tab .reports-quote-label {
+  color: var(--accent);
+  font-size: var(--type-caption-size);
+  font-weight: var(--type-caption-weight);
+  letter-spacing: var(--type-caption-tracking);
+}
+
+.reports-tab .reports-quote-review {
+  color: var(--secondary-label);
+  font-size: var(--type-caption-size);
+  line-height: var(--type-caption-leading);
+}
+
+/* Secondary action row — destructive action stays visually subordinate. */
+.reports-tab .reports-actions {
+  margin-top: var(--space-3);
+}
+
+@media (max-width: 759px) {
+  .reports-tab .review-card {
+    padding: var(--space-4);
+    gap: var(--space-3);
+  }
+
+  .reports-tab .reports-quote {
+    padding: var(--space-3);
+  }
+
+  .reports-tab .reports-actions .btn {
+    flex: 1;
+  }
+}
