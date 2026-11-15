@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Category } from '@/core/domain/entities/category'
 import type { Product } from '@/core/domain/entities/product'
+import type { DuplicateSuggestion } from '@/core/usecases/product-service'
 import { getServices } from '@/infra/di'
 import { useAuth } from '@/presentation/auth/AuthContext'
 import { DomainError } from '@/core/usecases/auth-service'
@@ -10,6 +11,9 @@ import { Msr } from '../ui/Msr'
 import { useToast } from '../ui/Toast'
 import { Alert } from '../ui/Alert'
 import './ProductForm.css'
+
+/** A suggestion at or above this score must be confirmed explicitly before submit. */
+const LIKELY_DUPLICATE_SCORE = 0.6
 
 function matchedProduct(error: unknown): Product | null {
   const details = (error as { details?: { product?: Product } } | null)?.details
@@ -50,8 +54,10 @@ export function ProductForm({ categories }: { categories: Category[] }) {
   const [error, setError] = useState<string | null>(null)
   const [isDuplicate, setIsDuplicate] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [suggestions, setSuggestions] = useState<Product[]>([])
+  const [suggestions, setSuggestions] = useState<DuplicateSuggestion[]>([])
   const [showDuplicates, setShowDuplicates] = useState(false)
+  const [overrideDuplicate, setOverrideDuplicate] = useState(false)
+  const [hardDuplicate, setHardDuplicate] = useState(false)
 
   const debouncedQuery = useDebounce(`${brand} ${model}`, 400)
 
@@ -63,7 +69,7 @@ export function ProductForm({ categories }: { categories: Category[] }) {
     let active = true
     getServices()
       .products.suggestDuplicates(brand, model)
-      .then((res) => active && setSuggestions(res.map((r) => r.product)))
+      .then((res) => active && setSuggestions(res))
       .catch(() => active && setSuggestions([]))
     return () => {
       active = false
@@ -74,11 +80,26 @@ export function ProductForm({ categories }: { categories: Category[] }) {
     if (error) setError(null)
     if (isDuplicate) setIsDuplicate(false)
     if (showDuplicates) setShowDuplicates(false)
+    if (overrideDuplicate) setOverrideDuplicate(false)
+    if (hardDuplicate) setHardDuplicate(false)
   }
 
   const submit = async () => {
     setError(null)
     setIsDuplicate(false)
+    if (hardDuplicate) return
+    if (
+      !overrideDuplicate &&
+      suggestions.some((s) => s.score >= LIKELY_DUPLICATE_SCORE)
+    ) {
+      // A likely duplicate is on screen: never create the product silently.
+      setIsDuplicate(true)
+      setShowDuplicates(true)
+      setError(
+        'Изглежда този продукт вече съществува в каталога. Отвори съвпадението или потвърди, че е нов продукт.',
+      )
+      return
+    }
     setBusy(true)
     try {
       const p = await getServices().products.addProduct(
@@ -99,15 +120,18 @@ export function ProductForm({ categories }: { categories: Category[] }) {
         )
         setIsDuplicate(true)
         setShowDuplicates(true)
+        setHardDuplicate(true)
 
         // Show the matched product immediately, then enrich with the ranked list
         // (covers inputs that differ a lot from the stored title).
-        const known = existing ? [existing] : []
+        const known = existing ? [{ product: existing, score: 1 }] : []
         if (known.length) setSuggestions(known)
         try {
           const list = await getServices().products.suggestDuplicates(brand, model)
-          const merged = [...known, ...list.map((r) => r.product)]
-          const unique = merged.filter((p, i, arr) => arr.findIndex((x) => x.id === p.id) === i)
+          const merged = [...known, ...list]
+          const unique = merged.filter(
+            (x, i, arr) => arr.findIndex((y) => y.product.id === x.product.id) === i,
+          )
           if (unique.length) setSuggestions(unique)
         } catch {
           // keep whatever we already have
@@ -120,14 +144,22 @@ export function ProductForm({ categories }: { categories: Category[] }) {
     }
   }
 
-  const visibleSuggestions = suggestions.slice(0, showDuplicates ? 5 : 3)
+  const likelyDuplicates = suggestions.filter((s) => s.score >= LIKELY_DUPLICATE_SCORE)
+  const visibleSuggestions = suggestions.slice(0, showDuplicates ? 5 : 3).map((s) => s.product)
+  const duplicateBlocked = hardDuplicate || (!overrideDuplicate && likelyDuplicates.length > 0)
 
   return (
     <div className="form-card product-form">
       {error && (
         <div className="product-form-feedback">
           <Alert kind={isDuplicate ? 'warning' : 'error'}>
-            <b>{isDuplicate ? 'Такъв продукт вече съществува' : 'Неуспешно изпращане'}</b>
+            <b>
+              {hardDuplicate
+                ? 'Такъв продукт вече съществува'
+                : isDuplicate
+                  ? 'Възможно е продуктът да съществува'
+                  : 'Неуспешно изпращане'}
+            </b>
             {error}
           </Alert>
         </div>
@@ -226,14 +258,54 @@ export function ProductForm({ categories }: { categories: Category[] }) {
         <Msr icon="info" size="sm" />
         Продуктът ще бъде видим в каталога след одобрение от модератор.
       </p>
-      <button
-        className="btn btn-primary btn-block product-submit"
-        onClick={submit}
-        disabled={busy || brand.trim().length < 2 || model.trim().length < 2 || !categoryId}
-      >
-        {busy ? <span className="spinner" /> : <Msr icon="send" size="sm" />}
-        Изпрати за одобрение
-      </button>
+      {hardDuplicate ? (
+        <button
+          className="btn btn-secondary btn-block product-submit"
+          onClick={() => {
+            const first = suggestions[0]?.product
+            if (first) navigate(`/products/${first.id}`)
+          }}
+        >
+          <Msr icon="open_in_new" size="sm" />
+          Отвори съществуващия продукт
+        </button>
+      ) : (
+        <>
+          {!overrideDuplicate && likelyDuplicates.length > 0 && (
+            <div className="stack product-duplicate-gate">
+              <p className="field-hint">
+                <Msr icon="info" size="sm" />
+                Намерихме вероятно съвпадение. Ако продуктът е нов, потвърди го, за да продължиш.
+              </p>
+              <button
+                className="btn btn-secondary btn-block"
+                onClick={() => {
+                  setOverrideDuplicate(true)
+                  setError(null)
+                  setIsDuplicate(false)
+                }}
+              >
+                <Msr icon="check" size="sm" />
+                Това е нов продукт — продължи
+              </button>
+            </div>
+          )}
+          <button
+            className="btn btn-primary btn-block product-submit"
+            onClick={submit}
+            disabled={
+              busy ||
+              duplicateBlocked ||
+              brand.trim().length < 2 ||
+              model.trim().length < 2 ||
+              !categoryId
+            }
+          >
+            {busy ? <span className="spinner" /> : <Msr icon="send" size="sm" />}
+            {duplicateBlocked ? 'Провери дубликатите' : 'Изпрати за одобрение'}
+          </button>
+        </>
+      )}
     </div>
   )
 }

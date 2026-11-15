@@ -25,6 +25,8 @@ export function ReviewForm({
   const [text, setText] = useState(existing?.text ?? '')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  // Settled only by editing the form: a duplicate review must not be resubmitted.
+  const [blocked, setBlocked] = useState(false)
 
   const submit = async () => {
     setError(null)
@@ -43,6 +45,7 @@ export function ReviewForm({
       const candidate = e as { code?: string; name?: string; message?: string } | null
       if (e instanceof DomainError || candidate?.name === 'DomainError') {
         setError(candidate?.message || 'Нещо се обърка при записването. Опитай отново.')
+        if ((candidate as { code?: string } | null)?.code === 'already_reviewed') setBlocked(true)
       } else if (candidate?.code === 'permission-denied') {
         setError('Нямаш права да запишеш ревюто. Провери дали си влязъл в профила.')
       } else if (candidate?.code === 'unavailable' || candidate?.code === 'deadline-exceeded') {
@@ -60,14 +63,23 @@ export function ReviewForm({
       <h3 className="detail-review-form-title">{existing ? 'Редактирай ревюто' : 'Напиши ревю'}</h3>
       <div className="field">
         <label>Оценка</label>
-        <StarInput value={rating} onChange={setRating} />
+        <StarInput
+          value={rating}
+          onChange={(value) => {
+            setRating(value)
+            if (blocked) setBlocked(false)
+          }}
+        />
       </div>
       <div className="field">
         <label>Описание</label>
         <textarea
           rows={4}
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => {
+            setText(e.target.value)
+            if (blocked) setBlocked(false)
+          }}
           placeholder="Разкажи за опита си — употреба, качество, цена, за какво е подходящо..."
         />
         <p className="field-hint">
@@ -82,7 +94,7 @@ export function ReviewForm({
         </p>
       )}
       <div className="row detail-review-form-actions">
-        <button className="btn btn-primary" onClick={submit} disabled={busy || rating === 0}>
+        <button className="btn btn-primary" onClick={submit} disabled={busy || blocked || rating === 0}>
           {busy ? <span className="spinner" /> : <Msr icon="send" size="sm" />}
           {existing ? 'Запази промените' : 'Публикувай ревюто'}
         </button>
