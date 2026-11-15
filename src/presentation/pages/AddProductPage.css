@@ -1,0 +1,90 @@
+/* Add product — page header plus one grouped surface holding the form.
+   Scoped under .add-product-page so overrides win over the shared design
+   system, whose stylesheet is bundled after this file. */
+
+.add-product-page .add-product-loading {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+}
+
+.add-product-page .add-product-skeleton {
+  width: 50%;
+  height: var(--space-7);
+}
+
+.add-product-guard {
+  display: grid;
+  gap: var(--space-4);
+  max-width: calc(var(--space-16) * 7);
+  margin: 0 auto;
+  padding: var(--space-5);
+  background: var(--surface-raised);
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--elevation-2);
+}
+
+.add-product-page .add-product-guard-actions {
+  justify-content: center;
+}
+
+.add-product-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+
+.add-product-page .add-product-head .eyebrow {
+  margin-bottom: 0;
+}
+
+/* Keep the icon ligature intact: the eyebrow's uppercase transform would
+   otherwise turn "add_circle" into rendered text instead of the glyph. */
+.add-product-page .add-product-head .eyebrow .msr {
+  text-transform: none;
+}
+
+.add-product-page .add-product-head .page-title {
+  margin: 0;
+}
+
+.add-product-page .add-product-head .page-sub {
+  margin: 0;
+  max-width: 100%;
+}
+
+.add-product-surface {
+  max-width: calc(var(--space-16) * 10 + var(--space-8));
+  padding: var(--space-3);
+  background: var(--surface-raised);
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--elevation-2);
+}
+
+@media (min-width: 768px) {
+  .add-product-surface {
+    padding: var(--space-5);
+  }
+}
+
+@media (min-width: 1024px) {
+  .add-product-page .add-product-head {
+    margin-bottom: var(--space-6);
+  }
+
+  .add-product-surface {
+    padding: var(--space-6);
+  }
+}
+
+@media (pointer: coarse) {
+  .add-product-page .breadcrumbs a,
+  .add-product-page .add-product-guard-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}

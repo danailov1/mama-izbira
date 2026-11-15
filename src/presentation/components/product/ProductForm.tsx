@@ -9,6 +9,7 @@ import { useDebounce } from '@/presentation/lib/useDebounce'
 import { Msr } from '../ui/Msr'
 import { useToast } from '../ui/Toast'
 import { Alert } from '../ui/Alert'
+import './ProductForm.css'
 
 function matchedProduct(error: unknown): Product | null {
   const details = (error as { details?: { product?: Product } } | null)?.details
@@ -122,9 +123,9 @@ export function ProductForm({ categories }: { categories: Category[] }) {
   const visibleSuggestions = suggestions.slice(0, showDuplicates ? 5 : 3)
 
   return (
-    <div className="form-card" style={{ maxWidth: 520 }}>
+    <div className="form-card product-form">
       {error && (
-        <div style={{ marginBottom: 16 }}>
+        <div className="product-form-feedback">
           <Alert kind={isDuplicate ? 'warning' : 'error'}>
             <b>{isDuplicate ? 'Такъв продукт вече съществува' : 'Неуспешно изпращане'}</b>
             {error}
@@ -133,27 +134,26 @@ export function ProductForm({ categories }: { categories: Category[] }) {
       )}
 
       {visibleSuggestions.length > 0 && (
-        <div style={{ marginBottom: 16 }}>
+        <div className="product-duplicates">
           <Alert kind="info">
             <b>{showDuplicates ? 'Отвори съществуващия продукт' : 'Възможни съвпадения'}</b>
             {showDuplicates
               ? 'Продуктът вече е в каталога — отвори го, за да прочетеш ревютата или да добавиш своето мнение.'
               : 'Провери дали продуктът вече съществува, преди да добавиш нов.'}
           </Alert>
-          <div className="stack" style={{ marginTop: 10 }}>
+          <div className="stack product-duplicates-list">
             {visibleSuggestions.map((s) => (
               <button
                 key={s.id}
-                className="btn btn-ghost"
-                style={{ justifyContent: 'flex-start' }}
+                className="btn btn-ghost product-suggestion"
                 onClick={() => navigate(`/products/${s.id}`)}
               >
                 <Msr icon="open_in_new" size="sm" />
-                <span style={{ flex: 1, textAlign: 'left' }}>
+                <span className="product-suggestion-name">
                   {s.brand} {s.model}
                 </span>
                 {s.reviewsCount > 0 && (
-                  <span className="muted" style={{ fontSize: 12, fontWeight: 500 }}>
+                  <span className="muted product-suggestion-count">
                     {reviewCountLabel(s.reviewsCount)}
                   </span>
                 )}
@@ -163,69 +163,71 @@ export function ProductForm({ categories }: { categories: Category[] }) {
         </div>
       )}
 
-      <div className="field">
-        <label>Марка</label>
-        <div className="field-input-wrap">
-          <Msr icon="sell" size="sm" />
+      <div className="product-fields">
+        <div className="field">
+          <label>Марка</label>
+          <div className="field-input-wrap">
+            <Msr icon="sell" size="sm" />
+            <input
+              type="text"
+              value={brand}
+              onChange={(e) => {
+                setBrand(e.target.value)
+                clearFeedback()
+              }}
+              placeholder="напр. Chicco"
+            />
+          </div>
+        </div>
+        <div className="field">
+          <label>Модел</label>
           <input
             type="text"
-            value={brand}
+            value={model}
             onChange={(e) => {
-              setBrand(e.target.value)
+              setModel(e.target.value)
               clearFeedback()
             }}
-            placeholder="напр. Chicco"
+            placeholder="напр. Best Friend Comfort"
+          />
+        </div>
+        <div className="field">
+          <label>Тип продукт</label>
+          <select
+            value={categoryId}
+            onChange={(e) => {
+              setCategoryId(e.target.value)
+              clearFeedback()
+            }}
+          >
+            <option value="">Избери категория...</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="field">
+          <label>Снимка (линк, по избор)</label>
+          <input
+            type="url"
+            value={imageUrl}
+            onChange={(e) => {
+              setImageUrl(e.target.value)
+              clearFeedback()
+            }}
+            placeholder="https://..."
           />
         </div>
       </div>
-      <div className="field">
-        <label>Модел</label>
-        <input
-          type="text"
-          value={model}
-          onChange={(e) => {
-            setModel(e.target.value)
-            clearFeedback()
-          }}
-          placeholder="напр. Best Friend Comfort"
-        />
-      </div>
-      <div className="field">
-        <label>Тип продукт</label>
-        <select
-          value={categoryId}
-          onChange={(e) => {
-            setCategoryId(e.target.value)
-            clearFeedback()
-          }}
-        >
-          <option value="">Избери категория...</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="field">
-        <label>Снимка (линк, по избор)</label>
-        <input
-          type="url"
-          value={imageUrl}
-          onChange={(e) => {
-            setImageUrl(e.target.value)
-            clearFeedback()
-          }}
-          placeholder="https://..."
-        />
-      </div>
-      <p className="field-hint">
+
+      <p className="field-hint product-hint">
         <Msr icon="info" size="sm" />
         Продуктът ще бъде видим в каталога след одобрение от модератор.
       </p>
       <button
-        className="btn btn-secondary btn-block"
-        style={{ justifyContent: 'center' }}
+        className="btn btn-primary btn-block product-submit"
         onClick={submit}
         disabled={busy || brand.trim().length < 2 || model.trim().length < 2 || !categoryId}
       >
