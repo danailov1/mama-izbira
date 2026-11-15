@@ -1,0 +1,194 @@
+/* ==========================================================================
+   Categories tab — info panel, admin-only new-category form and the inset
+   grouped category table. Scoped under .categories-tab because page CSS is
+   bundled before design-system.css (specificity 0,2,0 or higher), tokens only.
+   ========================================================================== */
+
+.categories-tab.stack {
+  gap: var(--space-5);
+}
+
+/* ----- Info panel -------------------------------------------------------- */
+
+.categories-tab .categories-info {
+  display: flex;
+}
+
+.categories-tab .categories-info .alert {
+  flex: 1 1 auto;
+  padding: var(--space-4) var(--space-5);
+  border-color: var(--separator);
+  border-radius: var(--radius-lg);
+  background: var(--surface-raised);
+  box-shadow: var(--elevation-1);
+}
+
+.categories-tab .categories-info .alert .msr {
+  color: var(--accent);
+}
+
+/* ----- Admin-only new-category form card -------------------------------- */
+
+.categories-tab .categories-form-cta {
+  display: flex;
+}
+
+.categories-tab .categories-form-cta .btn {
+  flex: 0 1 auto;
+}
+
+.categories-tab .categories-form-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+  max-width: calc(var(--space-16) * 8 + var(--space-2));
+  padding: var(--space-6);
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-lg);
+  background: var(--surface-raised);
+  box-shadow: var(--elevation-2);
+}
+
+.categories-tab .categories-form-title {
+  margin: 0;
+  color: var(--label);
+  font-family: var(--font-sans);
+  font-size: var(--type-headline-size);
+  font-weight: var(--type-headline-weight);
+  letter-spacing: var(--type-headline-tracking);
+  line-height: var(--type-headline-leading);
+}
+
+.categories-tab .categories-form-card .field {
+  margin-bottom: 0;
+}
+
+.categories-tab .categories-icon-picker {
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  overflow: visible;
+  padding: var(--space-1) 0;
+}
+
+.categories-tab .categories-icon-picker .chip {
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: var(--space-2);
+}
+
+.categories-tab .categories-form-actions .btn {
+  flex: 0 1 auto;
+}
+
+.categories-tab .categories-form-card .categories-error {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--accent-tint-strong);
+  border-radius: var(--radius-md);
+  background: var(--accent-tint);
+  color: var(--accent);
+  font-size: var(--type-callout-size);
+  line-height: var(--type-callout-leading);
+}
+
+.categories-tab .categories-hint,
+.categories-tab .field-hint {
+  color: var(--secondary-label);
+  font-size: var(--type-caption-size);
+  letter-spacing: var(--type-caption-tracking);
+  line-height: var(--type-caption-leading);
+}
+
+/* ----- Inset grouped category table ------------------------------------- */
+
+.categories-tab .categories-table-group {
+  padding: var(--space-2);
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-lg);
+  background: var(--fill-secondary);
+  box-shadow: var(--elevation-1);
+}
+
+.categories-tab .categories-table-group .table-wrap {
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  box-shadow: var(--elevation-1);
+}
+
+.categories-tab .categories-table-group .table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.categories-tab .categories-table-group thead th {
+  padding: var(--space-3) var(--space-4);
+  background: var(--fill-secondary);
+  white-space: nowrap;
+}
+
+.categories-tab .categories-table-group tbody td {
+  padding: var(--space-3) var(--space-4);
+  white-space: nowrap;
+}
+
+@media (hover: hover) {
+  .categories-tab .categories-table-group tbody tr:hover td {
+    background: var(--fill-secondary);
+  }
+}
+
+/* ----- Compact widths: full-bleed card, tight grouped table ------------- */
+
+@media (max-width: 759px) {
+  .categories-tab.stack {
+    gap: var(--space-4);
+  }
+
+  .categories-tab .categories-form-cta,
+  .categories-tab .categories-form-cta .btn {
+    width: 100%;
+  }
+
+  .categories-tab .categories-form-card {
+    max-width: 100%;
+    padding: var(--space-5);
+    border-radius: var(--radius-md);
+  }
+
+  .categories-tab .categories-form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .categories-tab .categories-form-actions .btn {
+    flex: 0 1 auto;
+    width: 100%;
+  }
+
+  .categories-tab .categories-table-group {
+    padding: var(--space-1);
+    border-radius: var(--radius-md);
+  }
+}
+
+@media (min-width: 1024px) {
+  .categories-tab .categories-form-card {
+    padding: var(--space-7);
+  }
+}
+
+/* ----- Coarse pointers: comfortable targets for the form controls ------- */
+
+@media (pointer: coarse) {
+  .categories-tab .categories-form-card .field input {
+    min-height: 44px;
+  }
+
+  .categories-tab .categories-form-actions .btn,
+  .categories-tab .categories-form-cta .btn,
+  .categories-tab .categories-table-group .btn {
+    min-height: 44px;
+  }
+}
