@@ -839,53 +839,56 @@ textarea:focus:not(:focus-visible) {
   font-size: var(--type-callout-size);
 }
 
+/* Review usefulness: two quiet thumb pills, each showing its own count. */
 .vote {
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
   align-items: center;
-  gap: 0;
-  background: var(--fill-secondary);
-  border-radius: var(--radius-sm);
-  padding: var(--space-1) var(--space-2);
-  border: 1px solid var(--separator);
+  gap: var(--space-2);
 }
 
 .vote button {
-  border: none;
-  background: none;
-  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-height: 32px;
+  padding: 0 var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: var(--fill-secondary);
   color: var(--secondary-label);
+  cursor: pointer;
   line-height: 1;
-  padding: var(--space-1);
-  display: flex;
-  border-radius: var(--radius-xs);
   transition:
     transform var(--duration-instant) var(--ease-out),
     opacity var(--duration-fast) var(--ease-out);
 }
 
-.vote button.up:hover {
+@media (hover: hover) and (pointer: fine) {
+  .vote button:hover {
+    color: var(--label);
+  }
+}
+
+.vote button.voted {
+  background: var(--accent-tint);
   color: var(--accent);
 }
 
-.vote button.up.voted {
-  color: var(--accent);
-}
-
-.vote button.down:hover {
-  color: var(--accent);
-}
-
-.vote button.down.voted {
-  color: var(--accent);
+.vote button:disabled {
+  opacity: 0.55;
+  cursor: default;
 }
 
 .vote-count {
   font-family: var(--font-sans);
-  font-weight: 700;
-  font-size: var(--type-callout-size);
-  letter-spacing: var(--type-callout-tracking);
-  color: var(--label);
+  font-weight: 600;
+  font-size: var(--type-caption-size);
+  line-height: 1;
+  letter-spacing: var(--type-caption-tracking);
+  color: inherit;
+  font-variant-numeric: tabular-nums;
+  min-width: 1ch;
 }
 
 /* ==========================================================================

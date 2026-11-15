@@ -121,7 +121,8 @@ export function ReviewCard({
         <VoteWidget
           productId={review.productId}
           reviewId={review.id}
-          netScore={review.netScore}
+          upvotes={review.upvotes}
+          downvotes={review.downvotes}
           canVote={canVote}
           onRequireAuth={requireAuth}
         />
